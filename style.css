@@ -1,88 +1,111 @@
 :root {
-    --primary: #1a2a6c;
-    --secondary: #2a4858;
-    --accent: #00d2ff;
-    --bg: #f4f7f9;
-    --text: #333;
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --accent: #38bdf8;
+    --text-main: #f1f5f9;
+    --text-dim: #94a3b8;
+    --success: #22c55e;
+    --danger: #ef4444;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg);
     margin: 0;
-    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
 }
 
-.navbar {
-    background: var(--primary);
-    color: white;
-    padding: 1rem 5%;
+.sidebar {
+    width: 260px;
+    background: #020617;
+    padding: 2rem;
+    border-right: 1px solid #334155;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+}
+
+header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.container {
-    padding: 2rem 5%;
-}
-
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     margin-bottom: 2rem;
 }
 
-.grid-form {
+.card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
 }
 
 input, select {
+    background: #0f172a;
+    border: 1px solid #334155;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    color: white;
+    border-radius: 6px;
 }
 
-.btn-save {
-    background: var(--primary);
-    color: white;
+.grid-3-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-primary, .btn-save {
+    background: var(--accent);
+    color: #0f172a;
     border: none;
-    padding: 12px 25px;
-    border-radius: 4px;
-    cursor: pointer;
+    padding: 12px 20px;
+    border-radius: 6px;
     font-weight: bold;
-    transition: 0.3s;
-}
-
-.btn-pdf {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
     cursor: pointer;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
 th {
-    background: var(--secondary);
-    color: white;
-    padding: 12px;
     text-align: left;
+    color: var(--text-dim);
+    padding: 1rem;
+    border-bottom: 1px solid #334155;
 }
 
 td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    padding: 1rem;
+    border-bottom: 1px solid #1e293b;
+}
+
+.stat-item p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 0.5rem 0;
 }
