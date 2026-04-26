@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContaFlow - Control Contable SII</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>ContaFlow <span>Chile</span></h1>
+        <div id="user-info">Registro Mensual F29</div>
+    </nav>
 
+    <div class="container">
+        <section class="card">
+            <h2>Nuevo Registro</h2>
+            <form id="registro-form">
+                <div class="grid-form">
+                    <input type="date" id="fecha" required>
+                    <select id="tipo" required>
+                        <option value="">Tipo de Documento</option>
+                        <option value="Factura Compra">Factura Compra (Crédito)</option>
+                        <option value="Factura Venta">Factura Venta (Débito)</option>
+                        <option value="Boleta Venta">Boleta Venta</option>
+                        <option value="Gasto Caja Chica">Gasto Caja Chica</option>
+                    </select>
+                    <input type="text" id="detalle" placeholder="Detalle (Ej: Repuestos, Arriendo)" required>
+                    <input type="number" id="neto" placeholder="Monto Neto $" required>
+                    <input type="number" id="iva" placeholder="IVA (19%)" readonly>
+                    <input type="number" id="total" placeholder="Total $" readonly>
+                </div>
+                <button type="submit" class="btn-save">Guardar en Google Cloud</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="header-table">
+                <h2>Registros del Mes</h2>
+                <button onclick="generarPDF()" class="btn-pdf">Exportar PDF para F29</button>
+            </div>
+            <table id="tabla-registros">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Detalle</th>
+                        <th>Neto</th>
+                        <th>IVA</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-datos">
+                    </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
