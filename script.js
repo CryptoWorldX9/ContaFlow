@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
-// Configuración de tu proyecto (Ya conectada)
 const firebaseConfig = {
   apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
   authDomain: "contaflow-22b0e.firebaseapp.com",
@@ -14,90 +13,93 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const coleccionRef = collection(db, "registros");
+const colRef = collection(db, "registros");
 
-// Lógica de cálculos automáticos
-const netoInput = document.getElementById('neto');
-const tipoSelect = document.getElementById('tipo');
+// Lógica de Impuestos automática
+const netoIn = document.getElementById('neto');
+const tipoSel = document.getElementById('tipo');
 
-function calcularMontos() {
-    const neto = parseFloat(netoInput.value) || 0;
-    const tipo = tipoSelect.value;
-    
-    // Si es Factura, calculamos IVA. Si es Boleta o Gasto, el IVA suele ser 0 o estar incluido.
-    // Para el SII, en facturas siempre se separa el 19%.
-    if (tipo.includes("Factura")) {
-        const iva = Math.round(neto * 0.19);
-        document.getElementById('iva').value = iva;
-        document.getElementById('total').value = neto + iva;
-    } else {
-        document.getElementById('iva').value = 0;
-        document.getElementById('total').value = neto;
-    }
+function actualizarCalculos() {
+    const neto = parseFloat(netoIn.value) || 0;
+    const tipo = tipoSel.value;
+    const iva = tipo.includes("Factura") ? Math.round(neto * 0.19) : 0;
+    document.getElementById('iva').value = iva;
+    document.getElementById('total').value = neto + iva;
 }
 
-netoInput.addEventListener('input', calcularMontos);
-tipoSelect.addEventListener('change', calcularMontos);
+netoIn.addEventListener('input', actualizarCalculos);
+tipoSel.addEventListener('change', actualizarCalculos);
 
-// Guardar datos en la base de datos
+// Gráfico
+let myChart;
+function actualizarGrafico(datos) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const ventas = datos.filter(d => d.tipo.includes("Venta")).reduce((a, b) => a + b.total, 0);
+    const compras = datos.filter(d => d.tipo.includes("Compra")).reduce((a, b) => a + b.total, 0);
+    const cajaChica = datos.filter(d => d.categoria === "cajachica").reduce((a, b) => a + b.total, 0);
+
+    if (myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Ventas', 'Compras', 'Caja Chica'],
+            datasets: [{
+                label: 'Monto en $',
+                data: [ventas, compras, cajaChica],
+                backgroundColor: ['#38bdf8', '#22c55e', '#ef4444']
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
+    const ivaVentas = datos.filter(d => d.tipo === "Factura Venta").reduce((a, b) => a + b.iva, 0);
+    const ivaCompras = datos.filter(d => d.tipo === "Factura Compra").reduce((a, b) => a + b.iva, 0);
+    document.getElementById('stat-iva').innerText = `$${(ivaVentas - ivaCompras).toLocaleString('es-CL')}`;
+}
+
+// Guardar
 document.getElementById('registro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    try {
-        const nuevoRegistro = {
-            fecha: document.getElementById('fecha').value,
-            tipo: document.getElementById('tipo').value,
-            detalle: document.getElementById('detalle').value,
-            neto: Number(document.getElementById('neto').value),
-            iva: Number(document.getElementById('iva').value),
-            total: Number(document.getElementById('total').value),
-            timestamp: new Date()
-        };
-
-        await addDoc(coleccionRef, nuevoRegistro);
-        alert("¡Registro guardado con éxito!");
-        document.getElementById('registro-form').reset();
-    } catch (error) {
-        console.error("Error al guardar:", error);
-        alert("Hubo un error al conectar con Google. Revisa las Reglas de Firestore.");
-    }
-});
-
-// Mostrar datos en la tabla automáticamente
-onSnapshot(query(coleccionRef, orderBy("fecha", "desc")), (snapshot) => {
-    const tabla = document.getElementById('lista-datos');
-    tabla.innerHTML = '';
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        tabla.innerHTML += `
-            <tr>
-                <td>${data.fecha}</td>
-                <td><strong>${data.tipo}</strong></td>
-                <td>${data.detalle}</td>
-                <td>$${data.neto.toLocaleString('es-CL')}</td>
-                <td>$${data.iva.toLocaleString('es-CL')}</td>
-                <td>$${data.total.toLocaleString('es-CL')}</td>
-            </tr>
-        `;
+    await addDoc(colRef, {
+        fecha: document.getElementById('fecha').value,
+        categoria: document.getElementById('categoria').value,
+        tipo: document.getElementById('tipo').value,
+        detalle: document.getElementById('detalle').value,
+        neto: Number(document.getElementById('neto').value),
+        iva: Number(document.getElementById('iva').value),
+        total: Number(document.getElementById('total').value),
+        timestamp: new Date()
     });
+    document.getElementById('registro-form').reset();
 });
 
-// Generar Reporte PDF Profesional
+// Escuchar cambios
+onSnapshot(query(colRef, orderBy("fecha", "desc")), (snapshot) => {
+    const list = [];
+    const tbody = document.getElementById('lista-datos');
+    tbody.innerHTML = '';
+    snapshot.forEach(doc => {
+        const d = doc.data();
+        list.push(d);
+        tbody.innerHTML += `
+            <tr style="border-left: 4px solid ${d.categoria === 'negocio' ? '#38bdf8' : '#ef4444'}">
+                <td>${d.fecha}</td>
+                <td style="font-size: 0.8rem; color: #94a3b8">${d.categoria.toUpperCase()}</td>
+                <td>${d.tipo}</td>
+                <td>${d.detalle}</td>
+                <td>$${d.neto.toLocaleString('es-CL')}</td>
+                <td>$${d.iva.toLocaleString('es-CL')}</td>
+                <td>$${d.total.toLocaleString('es-CL')}</td>
+            </tr>`;
+    });
+    actualizarGrafico(list);
+});
+
 window.generarPDF = function() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
-    doc.setFontSize(18);
-    doc.text("ContaFlow - Reporte Contable Mensual", 14, 20);
-    doc.setFontSize(10);
-    doc.text("Documento generado para apoyo en Declaración F29", 14, 28);
-    
-    doc.autoTable({ 
-        html: '#tabla-registros', 
-        startY: 35,
-        theme: 'striped',
-        headStyles: { fillColor: [26, 42, 108] }
-    });
-    
-    doc.save("Reporte_Mensual_ContaFlow.pdf");
+    doc.text("ContaFlow Pro - Reporte de Movimientos", 14, 15);
+    doc.autoTable({ html: '#tabla-registros', startY: 25 });
+    doc.save("Reporte_Contable_Pro.pdf");
 }
