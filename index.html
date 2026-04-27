@@ -1,125 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro | Escritorio</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContaFlow PRO</title>
+
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
+
 <body>
-    <div class="app-shell">
-        <aside class="sidebar">
-            <div class="brand-box">
-                <div class="logo-icon">CF</div>
-                <div class="brand-text">ContaFlow<span>PRO</span></div>
-            </div>
 
-            <div class="period-selector">
-                <label>PERÍODO</label>
-                <input type="month" id="filtro-periodo" class="month-picker">
-            </div>
-            
-            <div class="nav-menu">
-                <div class="menu-label">REPORTE RÁPIDO</div>
-                <div class="stat-card blue">
-                    <span class="label">Ventas</span>
-                    <h2 id="stat-ventas">$0</h2>
-                </div>
-                <div class="stat-card red">
-                    <span class="label">Caja Chica</span>
-                    <h2 id="stat-caja">$0</h2>
-                </div>
-                <div class="stat-card purple">
-                    <span class="label">IVA Mes</span>
-                    <h2 id="stat-iva">$0</h2>
-                </div>
-            </div>
+<div class="app-shell">
 
-            <div class="export-actions">
-                <button onclick="exportarReporte('pdf')" class="btn-pro pdf">📄 PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-pro excel">📊 EXCEL</button>
-            </div>
-        </aside>
-
-        <main class="main-content">
-            <div class="dashboard-grid">
-                <section class="glass-card form-section">
-                    <div class="card-header"><h3>Ingreso de Datos</h3></div>
-                    <form id="registro-form">
-                        <input type="hidden" id="edit-id">
-                        <div class="input-row">
-                            <div class="field"><label>Fecha</label><input type="date" id="fecha" required></div>
-                            <div class="field">
-                                <label>Categoría</label>
-                                <select id="categoria" required>
-                                    <option value="negocio">Libro Compra/Venta</option>
-                                    <option value="cajachica">Caja Chica</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="input-row">
-                            <div class="field">
-                                <label>Documento</label>
-                                <select id="tipo" required>
-                                    <option value="Factura Venta">Factura Venta</option>
-                                    <option value="Factura Compra">Factura Compra</option>
-                                    <option value="Boleta Venta">Boleta Venta</option>
-                                    <option value="Gasto Caja Chica">Gasto Caja Chica</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Detalle</label>
-                                <input type="text" id="detalle" placeholder="Descripción..." required>
-                            </div>
-                        </div>
-                        <div class="money-grid">
-                            <div class="money-field"><label>Neto</label><input type="number" id="neto"></div>
-                            <div class="money-field"><label>IVA</label><input type="number" id="iva" readonly></div>
-                            <div class="money-field total-hl"><label>Total</label><input type="number" id="total"></div>
-                        </div>
-                        <button type="submit" id="btn-submit" class="btn-confirm">GUARDAR REGISTRO</button>
-                    </form>
-                </section>
-
-                <section class="glass-card chart-section">
-                    <div class="card-header"><h3>Tendencia Mensual</h3></div>
-                    <div class="chart-container">
-                        <canvas id="myChart"></canvas>
-                    </div>
-                </section>
-
-                <section class="glass-card table-section">
-                    <div class="table-header-pro">
-                        <h3>Maestro de Movimientos</h3>
-                        <div class="filter-chips">
-                            <button class="chip active" data-val="Factura Venta">Ventas</button>
-                            <button class="chip active" data-val="Factura Compra">Compras</button>
-                            <button class="chip active" data-val="Gasto Caja Chica">Caja</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Detalle</th>
-                                    <th>Total</th>
-                                    <th class="text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-datos"></tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
-        </main>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="brand-box">
+        <div class="logo-icon">CF</div>
+        <div class="brand-text">ContaFlow<span>PRO</span></div>
     </div>
-    <script type="module" src="script.js"></script>
+
+    <input type="month" id="filtro-periodo" class="month-picker">
+
+    <div class="stats">
+        <div class="stat"><span>Ventas</span><b id="stat-ventas">$0</b></div>
+        <div class="stat"><span>Caja</span><b id="stat-caja">$0</b></div>
+        <div class="stat"><span>IVA</span><b id="stat-iva">$0</b></div>
+    </div>
+
+    <button onclick="abrirConfig()" class="btn-config">⚙️</button>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- FORM -->
+<section class="card">
+<h3>Nuevo Registro</h3>
+
+<form id="form">
+
+<input type="hidden" id="edit-id">
+
+<div class="grid2">
+<input type="date" id="fecha" required>
+
+<select id="categoria">
+<option value="negocio">Negocio</option>
+<option value="caja">Caja chica</option>
+</select>
+</div>
+
+<select id="tipo">
+<option value="Factura Venta">Factura Venta</option>
+<option value="Factura Compra">Factura Compra</option>
+<option value="Boleta Venta">Boleta Venta</option>
+<option value="Servicio">Pago Servicio</option>
+</select>
+
+<select id="subtipo">
+<option value="Compra">Compra</option>
+<option value="Servicio">Servicio</option>
+</select>
+
+<!-- proveedor opcional -->
+<div class="grid2 opcional">
+<input type="text" id="rut" placeholder="RUT proveedor (opcional)">
+<input type="text" id="proveedor" placeholder="Proveedor (opcional)">
+</div>
+
+<!-- detalle avanzado -->
+<div id="detalle-lista"></div>
+<button type="button" onclick="agregarItem()">+ Agregar item</button>
+
+<div class="money">
+<input type="number" id="neto" placeholder="Neto">
+<input type="number" id="iva" placeholder="IVA" readonly>
+<input type="number" id="total" placeholder="Total">
+</div>
+
+<button type="submit">Guardar</button>
+
+</form>
+</section>
+
+<!-- CHART -->
+<section class="card">
+<canvas id="chart"></canvas>
+</section>
+
+<!-- TABLA -->
+<section class="card">
+<table>
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Tipo</th>
+<th>Proveedor</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
+</section>
+
+</main>
+
+</div>
+
+<!-- MODAL CONFIG -->
+<div id="configModal" class="modal">
+<div class="modal-content">
+<h3>Configuración</h3>
+
+<label>Tipos personalizados</label>
+<input id="nuevoTipo" placeholder="Ej: Arriendo">
+<button onclick="agregarTipo()">Agregar</button>
+
+<ul id="listaTipos"></ul>
+
+<button onclick="cerrarConfig()">Cerrar</button>
+</div>
+</div>
+
+<script type="module" src="script.js"></script>
+
 </body>
 </html>
