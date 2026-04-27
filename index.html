@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ContaFlow Pro | Dashboard Corporativo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -26,8 +26,8 @@
 
         /* Scroll moderno */
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
             background: #e2e8f0;
@@ -48,12 +48,11 @@
         .sidebar-modern {
             width: 280px;
             background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%);
-            backdrop-filter: blur(0px);
             color: #e2e8f0;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             box-shadow: 4px 0 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
@@ -204,6 +203,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .page-title h1 {
             font-size: 1.8rem;
@@ -220,6 +221,7 @@
             font-weight: 500;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             color: #475569;
+            font-size: 0.85rem;
         }
 
         .grid-2col {
@@ -243,6 +245,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .card-header-pro h3 {
             font-weight: 700;
@@ -307,9 +311,8 @@
             transition: 0.2s;
             margin-top: 8px;
         }
-        .btn-primary-grad:hover {
-            background: linear-gradient(105deg, #1e293b, #0f172a);
-            transform: scale(0.98);
+        .btn-primary-grad:active {
+            transform: scale(0.97);
         }
 
         .chart-container-modern {
@@ -328,6 +331,7 @@
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 700px;
         }
         .data-table th {
             text-align: left;
@@ -351,26 +355,29 @@
             font-size: 0.7rem;
             font-weight: 600;
             color: #1e40af;
+            display: inline-block;
         }
         .action-icons i {
             margin: 0 6px;
             cursor: pointer;
             color: #94a3b8;
             transition: 0.1s;
+            font-size: 1.1rem;
         }
-        .action-icons i:hover { color: #3b82f6; }
+        .action-icons i:active { transform: scale(0.9); }
 
         .filter-chip-bar {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            margin: 16px 20px;
+            flex-wrap: wrap;
         }
         .chip-pro {
             background: white;
             border: 1px solid #e2e8f0;
-            padding: 6px 16px;
+            padding: 8px 18px;
             border-radius: 40px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -380,24 +387,199 @@
             color: white;
             border-color: #0f172a;
         }
+        .chip-pro:active { transform: scale(0.95); }
 
-        @media (max-width: 1000px) {
-            .app-container { flex-direction: column; }
-            .sidebar-modern { width: 100%; height: auto; position: relative; border-radius: 0; flex-direction: row; flex-wrap: wrap; padding-bottom: 12px; }
-            .brand-corporate { flex: 1; padding: 16px; margin: 0; }
-            .period-panel { width: 200px; margin: 12px; }
-            .kpi-stack { flex-direction: row; margin: 8px 16px; }
-            .export-group { margin-top: 0; width: auto; }
-            .grid-2col { grid-template-columns: 1fr; }
-            .fullwidth-table { grid-column: span 1; }
-            .main-dashboard { padding: 20px; }
-        }
-        @media (max-width: 700px) {
-            .kpi-stack { flex-wrap: wrap; }
-            .kpi-card-modern { flex: 1; min-width: 130px; }
-        }
         .text-right { text-align: right; }
         .total-destacado { font-weight: 800; color: #0f172a; }
+
+        /* ==================== */
+        /* VERSIÓN MÓVIL MEJORADA - ESTILO APP */
+        /* ==================== */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar-modern {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-radius: 0;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding-bottom: 16px;
+                gap: 12px;
+            }
+            
+            .brand-corporate {
+                flex: 1;
+                padding: 16px 20px;
+                margin: 0;
+                border-bottom: none;
+            }
+            
+            .logo-wrapper {
+                justify-content: center;
+            }
+            
+            .period-panel {
+                width: auto;
+                min-width: 180px;
+                margin: 8px 12px;
+                padding: 12px;
+            }
+            
+            .kpi-stack {
+                flex-direction: row;
+                margin: 8px 12px;
+                gap: 10px;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .kpi-stack::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .kpi-card-modern {
+                min-width: 150px;
+                flex-shrink: 0;
+            }
+            
+            .kpi-value {
+                font-size: 1.3rem;
+            }
+            
+            .export-group {
+                margin: 8px 12px;
+                padding: 0;
+                width: auto;
+            }
+            
+            .btn-export {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+            
+            .main-dashboard {
+                padding: 16px;
+            }
+            
+            .dashboard-header {
+                margin-bottom: 20px;
+            }
+            
+            .page-title h1 {
+                font-size: 1.4rem;
+            }
+            
+            .date-badge {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+            }
+            
+            .grid-2col {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .fullwidth-table {
+                grid-column: span 1;
+            }
+            
+            .card-header-pro {
+                padding: 16px 16px 0 16px;
+            }
+            
+            .card-header-pro h3 {
+                font-size: 1rem;
+            }
+            
+            .form-modern {
+                padding: 16px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .money-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+            
+            .input-modern {
+                font-size: 1rem;
+                padding: 12px;
+                height: 48px;
+            }
+            
+            .btn-primary-grad {
+                height: 50px;
+                font-size: 0.9rem;
+            }
+            
+            .chart-container-modern {
+                height: 240px;
+                padding: 12px;
+            }
+            
+            .filter-chip-bar {
+                margin: 12px 16px;
+            }
+            
+            .chip-pro {
+                padding: 6px 14px;
+                font-size: 0.7rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 12px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .badge-tipo {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+            }
+            
+            .action-icons i {
+                font-size: 1rem;
+                margin: 0 4px;
+            }
+        }
+
+        /* Para móviles pequeños */
+        @media (max-width: 480px) {
+            .sidebar-modern {
+                gap: 8px;
+            }
+            
+            .kpi-card-modern {
+                min-width: 130px;
+            }
+            
+            .kpi-title {
+                font-size: 0.6rem;
+            }
+            
+            .kpi-value {
+                font-size: 1.1rem;
+            }
+            
+            .btn-export {
+                padding: 8px 12px;
+                font-size: 0.7rem;
+            }
+            
+            .main-dashboard {
+                padding: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -423,7 +605,7 @@
                 <div class="kpi-value" id="kpi-caja">$0</div>
             </div>
             <div class="kpi-card-modern iva">
-                <div class="kpi-title"><i class="fas fa-percent"></i> IVA a Pagar/Compensar</div>
+                <div class="kpi-title"><i class="fas fa-percent"></i> IVA a Pagar</div>
                 <div class="kpi-value" id="kpi-iva">$0</div>
             </div>
         </div>
@@ -435,7 +617,7 @@
     <main class="main-dashboard">
         <div class="dashboard-header">
             <div class="page-title"><h1><i class="fas fa-chart-pie"></i> Resumen Ejecutivo</h1></div>
-            <div class="date-badge"><i class="far fa-clock"></i> Actualizado en tiempo real</div>
+            <div class="date-badge"><i class="far fa-clock"></i> Actualizado</div>
         </div>
         <div class="grid-2col">
             <div class="card-glass">
@@ -464,10 +646,10 @@
             </div>
             <div class="card-glass fullwidth-table">
                 <div class="card-header-pro"><h3><i class="fas fa-table-list"></i> Libro Mayor</h3></div>
-                <div class="filter-chip-bar" style="padding:0 20px;">
-                    <button class="chip-pro active" data-filter="Factura Venta">Ventas</button>
-                    <button class="chip-pro active" data-filter="Factura Compra">Compras</button>
-                    <button class="chip-pro active" data-filter="Gasto Caja Chica">Caja Chica</button>
+                <div class="filter-chip-bar">
+                    <button class="chip-pro active" data-filter="Factura Venta">📈 Ventas</button>
+                    <button class="chip-pro active" data-filter="Factura Compra">📦 Compras</button>
+                    <button class="chip-pro active" data-filter="Gasto Caja Chica">💵 Caja Chica</button>
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
@@ -493,7 +675,7 @@
 
 <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, Timestamp } from "firebase/firestore";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "firebase/firestore";
     
     const firebaseConfig = {
         apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
@@ -504,6 +686,7 @@
         appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
         measurementId: "G-CTWWH372DE"
     };
+    
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const registrosRef = collection(db, "registros");
@@ -514,7 +697,6 @@
     const hoy = new Date();
     periodoInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
     
-    // Campos formulario
     const fechaInp = document.getElementById('fecha');
     const categoriaInp = document.getElementById('categoria');
     const tipoInp = document.getElementById('tipo');
@@ -534,6 +716,7 @@
         ivaInp.value = iva;
         totalInp.value = neto + iva;
     }
+    
     function calcularDesdeTotal() {
         const total = parseFloat(totalInp.value) || 0;
         const tipo = tipoInp.value;
@@ -547,6 +730,7 @@
             ivaInp.value = 0;
         }
     }
+    
     netoInp.addEventListener('input', calcularImpuestos);
     totalInp.addEventListener('input', calcularDesdeTotal);
     tipoInp.addEventListener('change', calcularImpuestos);
@@ -567,23 +751,30 @@
             if(id) await updateDoc(doc(db, "registros", id), data);
             else await addDoc(registrosRef, data);
             limpiarFormulario();
-        } catch(error) { console.error(error); }
+        } catch(error) { 
+            console.error(error);
+            alert("Error al guardar: " + error.message);
+        }
     }
     
     function limpiarFormulario() {
-        document.getElementById('registro-form')?.reset();
         editIdInp.value = "";
         btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR REGISTRO';
-        fechaInp.value = "";
+        fechaInp.valueAsDate = new Date();
         detalleInp.value = "";
         netoInp.value = "";
         ivaInp.value = "";
         totalInp.value = "";
         categoriaInp.value = "negocio";
         tipoInp.value = "Factura Venta";
+        calcularImpuestos();
     }
     
-    window.eliminarRegistro = async (id) => { if(confirm("¿Eliminar movimiento?")) await deleteDoc(doc(db, "registros", id)); };
+    window.eliminarRegistro = async (id) => { 
+        if(confirm("¿Eliminar este movimiento?")) 
+            await deleteDoc(doc(db, "registros", id)); 
+    };
+    
     window.prepararEdicion = (id) => {
         const item = allData.find(d => d.id === id);
         if(!item) return;
@@ -601,7 +792,6 @@
     
     document.getElementById('form-registro').addEventListener('submit', guardarRegistro);
     
-    // Filtros y renderizado
     function getActiveFilters() {
         let chk = document.querySelectorAll('.chip-pro.active');
         return Array.from(chk).map(c => c.getAttribute('data-filter'));
@@ -625,7 +815,6 @@
         document.getElementById('kpi-caja').innerHTML = `$${cajaTotal.toLocaleString('es-CL')}`;
         document.getElementById('kpi-iva').innerHTML = `$${ivaNeto.toLocaleString('es-CL')}`;
         
-        // Tabla
         const tbody = document.getElementById('tabla-cuerpo');
         tbody.innerHTML = '';
         filtered.forEach(reg => {
@@ -640,25 +829,41 @@
             row.cells[6].innerHTML = `<i class="fas fa-edit" onclick="prepararEdicion('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
         });
         
-        // Chart comparativo: Ventas vs Compras vs Caja para el mes filtrado
         let ventasChart = 0, comprasChart = 0, cajaChart = 0;
         filtered.forEach(d => {
             if(d.tipo.includes("Venta") || d.tipo === "Boleta Venta") ventasChart += d.total;
             if(d.tipo === "Factura Compra") comprasChart += d.total;
             if(d.tipo === "Gasto Caja Chica") cajaChart += d.total;
         });
+        
         const ctx = document.getElementById('chartComparativo').getContext('2d');
         if(chartInstance) chartInstance.destroy();
         chartInstance = new Chart(ctx, {
             type: 'bar',
-            data: { labels: ['📈 Ventas', '📦 Compras', '💵 Caja Chica'], datasets: [{ label: 'Monto CLP', data: [ventasChart, comprasChart, cajaChart], backgroundColor: ['#3b82f6', '#8b5cf6', '#f97316'], borderRadius: 12, barPercentage: 0.6 }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString('es-CL')}` } } } }
+            data: { 
+                labels: ['📈 Ventas', '📦 Compras', '💵 Caja Chica'], 
+                datasets: [{ 
+                    label: 'Monto CLP', 
+                    data: [ventasChart, comprasChart, cajaChart], 
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f97316'], 
+                    borderRadius: 12, 
+                    barPercentage: 0.6 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: true, 
+                plugins: { 
+                    legend: { position: 'top' }, 
+                    tooltip: { callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString('es-CL')}` } } 
+                } 
+            }
         });
     }
     
     window.exportarReporte = (tipo) => {
         const periodo = periodoInput.value;
-        const datosMes = allData.filter(d => d.fecha.startsWith(periodo));
+        const datosMes = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
         if(tipo === 'excel') {
             const wsData = datosMes.map(d => ({ Fecha: d.fecha, Tipo: d.tipo, Detalle: d.detalle, Neto: d.neto, IVA: d.iva, Total: d.total }));
             const ws = XLSX.utils.json_to_sheet(wsData);
@@ -678,20 +883,9 @@
         }
     };
     
-    // Listeners de filtros y periodo
     document.querySelectorAll('.chip-pro').forEach(chip => {
         chip.addEventListener('click', () => { chip.classList.toggle('active'); renderDashboard(); });
     });
     periodoInput.addEventListener('change', renderDashboard);
     
-    onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
-        allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderDashboard();
-    });
-    
-    // fecha por defecto hoy
-    if(!fechaInp.value) fechaInp.valueAsDate = new Date();
-    calcularImpuestos();
-</script>
-</body>
-</html>
+    onSnapshot(query
