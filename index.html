@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro Mobile</title>
+    <title>ContaFlow Pro | Business Intelligence</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,87 +11,92 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="app-container">
-        <nav class="top-nav">
+    <div class="main-layout">
+        <aside class="sidebar">
             <div class="logo">ContaFlow <span>Pro</span></div>
-            <div class="top-stats">
-                <div>IVA: <span id="stat-iva">$0</span></div>
+            <div class="sidebar-stats">
+                <div class="mini-stat"><span>Ventas</span><h3 id="stat-ventas">$0</h3></div>
+                <div class="mini-stat"><span>IVA Mes</span><h3 id="stat-iva">$0</h3></div>
             </div>
-        </nav>
+            <div class="sidebar-actions">
+                <button onclick="exportarReporte('pdf')" class="btn-exp pdf">PDF</button>
+                <button onclick="exportarReporte('excel')" class="btn-exp xls">EXCEL</button>
+            </div>
+        </aside>
 
-        <section class="summary-cards">
-            <div class="s-card blue">
-                <span>Ventas</span>
-                <h2 id="stat-ventas">$0</h2>
-            </div>
-            <div class="s-card red">
-                <span>Gastos/C.Chica</span>
-                <h2 id="stat-gastos">$0</h2>
-            </div>
-        </section>
+        <main class="content">
+            <div class="grid-container">
+                <section class="card form-card">
+                    <h3>➕ Registro de Movimientos</h3>
+                    <form id="registro-form">
+                        <input type="hidden" id="edit-id">
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select id="categoria" required>
+                                <option value="negocio">Libro Compra/Venta (IVA)</option>
+                                <option value="cajachica">Caja Chica (Renta)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Documento</label>
+                            <select id="tipo" required>
+                                <option value="Factura Venta">Factura Venta</option>
+                                <option value="Factura Compra">Factura Compra</option>
+                                <option value="Boleta Venta">Boleta Venta</option>
+                                <option value="Gasto Caja Chica">Gasto Caja Chica</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Detalle</label>
+                            <input type="text" id="detalle" placeholder="Ej: Repuestos L200" required>
+                        </div>
+                        <div class="grid-3-col">
+                            <input type="number" id="neto" placeholder="Neto" required>
+                            <input type="number" id="iva" placeholder="IVA" readonly>
+                            <input type="number" id="total" placeholder="Total" readonly>
+                        </div>
+                        <button type="submit" id="btn-submit" class="btn-primary">GUARDAR DATOS</button>
+                    </form>
+                </section>
 
-        <section class="card mobile-form">
-            <h3>➕ Nuevo Registro</h3>
-            <form id="registro-form">
-                <input type="hidden" id="edit-id">
-                <div class="input-row">
-                    <input type="date" id="fecha" required>
-                    <select id="categoria" required>
-                        <option value="negocio">Libro Compra/Venta</option>
-                        <option value="cajachica">Caja Chica (Gastos)</option>
-                    </select>
-                </div>
-                <select id="tipo" required>
-                    <option value="Factura Venta">Factura Venta (Débito)</option>
-                    <option value="Factura Compra">Factura Compra (Crédito)</option>
-                    <option value="Boleta Venta">Boleta Venta</option>
-                    <option value="Gasto Caja Chica">Gasto Caja Chica</option>
-                </select>
-                <input type="text" id="detalle" placeholder="Detalle (ej: Repuestos L200)" required>
-                <div class="grid-3-col">
-                    <input type="number" id="neto" placeholder="Neto $" required>
-                    <input type="number" id="iva" placeholder="IVA" readonly>
-                    <input type="number" id="total" placeholder="Total" readonly>
-                </div>
-                <button type="submit" id="btn-submit" class="btn-save">GUARDAR REGISTRO</button>
-            </form>
-        </section>
+                <section class="card chart-card">
+                    <h3>📊 Resumen de Flujos</h3>
+                    <div class="canvas-container">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </section>
 
-        <section class="card chart-box">
-            <canvas id="myChart"></canvas>
-        </section>
-
-        <section class="card filter-section">
-            <h3>Historial y Reportes</h3>
-            <div class="filter-controls">
-                <label><input type="checkbox" class="f-check" value="Factura Venta" checked> Ventas</label>
-                <label><input type="checkbox" class="f-check" value="Factura Compra" checked> Compras</label>
-                <label><input type="checkbox" class="f-check" value="Gasto Caja Chica" checked> Caja Chica</label>
+                <section class="card table-card">
+                    <div class="table-header">
+                        <h3>Historial</h3>
+                        <div class="filter-chips">
+                            <button class="chip active" data-val="Factura Venta">Ventas</button>
+                            <button class="chip active" data-val="Factura Compra">Compras</button>
+                            <button class="chip active" data-val="Gasto Caja Chica">Caja Chica</button>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="tabla-registros">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Detalle</th>
+                                    <th>Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-datos"></tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
-            <div class="export-buttons">
-                <button onclick="exportarReporte('pdf')" class="btn-pdf">Exportar PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-excel">Exportar Excel</button>
-            </div>
-        </section>
-
-        <section class="card table-card">
-            <div class="table-wrapper">
-                <table id="tabla-registros">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Tipo</th>
-                            <th>Detalle</th>
-                            <th>Total</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-datos"></tbody>
-                </table>
-            </div>
-        </section>
+        </main>
     </div>
-
     <script type="module" src="script.js"></script>
 </body>
 </html>
