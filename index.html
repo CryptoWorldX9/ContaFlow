@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro | Business Intelligence</title>
+    <title>ContaFlow Pro | Sistema Contable</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,38 +11,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="main-layout">
+    <div class="main-wrapper">
         <aside class="sidebar">
-            <div class="logo">ContaFlow <span>Pro</span></div>
-            <div class="sidebar-stats">
-                <div class="mini-stat"><span>Ventas</span><h3 id="stat-ventas">$0</h3></div>
-                <div class="mini-stat"><span>IVA Mes</span><h3 id="stat-iva">$0</h3></div>
+            <div class="brand">ContaFlow <span>PRO</span></div>
+            <div class="quick-stats">
+                <div class="stat-box">
+                    <span>Ventas Mes</span>
+                    <h2 id="stat-ventas">$0</h2>
+                </div>
+                <div class="stat-box">
+                    <span>IVA Estimado</span>
+                    <h2 id="stat-iva">$0</h2>
+                </div>
             </div>
-            <div class="sidebar-actions">
-                <button onclick="exportarReporte('pdf')" class="btn-exp pdf">PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-exp xls">EXCEL</button>
+            <div class="export-zone">
+                <button onclick="exportarReporte('pdf')" class="btn-pdf">Exportar PDF</button>
+                <button onclick="exportarReporte('excel')" class="btn-xls">Exportar Excel</button>
             </div>
         </aside>
 
-        <main class="content">
-            <div class="grid-container">
-                <section class="card form-card">
-                    <h3>➕ Registro de Movimientos</h3>
+        <main class="main-content">
+            <div class="dashboard">
+                <section class="card form-container">
+                    <h3>➕ Registro</h3>
                     <form id="registro-form">
                         <input type="hidden" id="edit-id">
-                        <div class="form-group">
-                            <label>Fecha</label>
-                            <input type="date" id="fecha" required>
+                        <div class="form-row">
+                            <div class="field">
+                                <label>Fecha</label>
+                                <input type="date" id="fecha" required>
+                            </div>
+                            <div class="field">
+                                <label>Categoría</label>
+                                <select id="categoria" required>
+                                    <option value="negocio">Libro Compra/Venta</option>
+                                    <option value="cajachica">Caja Chica</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <select id="categoria" required>
-                                <option value="negocio">Libro Compra/Venta (IVA)</option>
-                                <option value="cajachica">Caja Chica (Renta)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Documento</label>
+                        <div class="field">
+                            <label>Tipo Documento</label>
                             <select id="tipo" required>
                                 <option value="Factura Venta">Factura Venta</option>
                                 <option value="Factura Compra">Factura Compra</option>
@@ -50,42 +58,41 @@
                                 <option value="Gasto Caja Chica">Gasto Caja Chica</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="field">
                             <label>Detalle</label>
                             <input type="text" id="detalle" placeholder="Ej: Repuestos L200" required>
                         </div>
-                        <div class="grid-3-col">
+                        <div class="monto-grid">
                             <input type="number" id="neto" placeholder="Neto" required>
                             <input type="number" id="iva" placeholder="IVA" readonly>
                             <input type="number" id="total" placeholder="Total" readonly>
                         </div>
-                        <button type="submit" id="btn-submit" class="btn-primary">GUARDAR DATOS</button>
+                        <button type="submit" id="btn-submit" class="btn-main">GUARDAR DATOS</button>
                     </form>
                 </section>
 
-                <section class="card chart-card">
-                    <h3>📊 Resumen de Flujos</h3>
-                    <div class="canvas-container">
+                <section class="card chart-container">
+                    <h3>📊 Resumen</h3>
+                    <div class="chart-wrapper">
                         <canvas id="myChart"></canvas>
                     </div>
                 </section>
 
-                <section class="card table-card">
+                <section class="card table-container">
                     <div class="table-header">
                         <h3>Historial</h3>
-                        <div class="filter-chips">
+                        <div class="chips-container">
                             <button class="chip active" data-val="Factura Venta">Ventas</button>
                             <button class="chip active" data-val="Factura Compra">Compras</button>
-                            <button class="chip active" data-val="Gasto Caja Chica">Caja Chica</button>
+                            <button class="chip active" data-val="Gasto Caja Chica">Caja</button>
                         </div>
                     </div>
-                    <div class="table-scroll">
+                    <div class="scrollable">
                         <table id="tabla-registros">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Tipo</th>
-                                    <th>Detalle</th>
                                     <th>Total</th>
                                     <th>Acciones</th>
                                 </tr>
