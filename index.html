@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Ultra v2 | Business Intelligence</title>
+    <title>ContaFlow Pro | Escritorio</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,15 +16,15 @@
         <aside class="sidebar">
             <div class="brand-box">
                 <div class="logo-icon">CF</div>
-                <div class="brand-text">ContaFlow<span>Ultra</span></div>
+                <div class="brand-text">ContaFlow<span>PRO</span></div>
             </div>
 
             <div class="period-selector">
-                <label>PERÍODO DE VISUALIZACIÓN</label>
+                <label>PERÍODO</label>
                 <input type="month" id="filtro-periodo" class="month-picker">
             </div>
             
-            <div class="nav-menu" id="reporte-rapido">
+            <div class="nav-menu">
                 <div class="menu-label">REPORTE RÁPIDO</div>
                 <div class="stat-card blue">
                     <span class="label">Ventas</span>
@@ -38,19 +38,11 @@
                     <span class="label">IVA Mes</span>
                     <h2 id="stat-iva">$0</h2>
                 </div>
-                <div class="stat-card green">
-                    <span class="label">Balance Neto</span>
-                    <h2 id="stat-balance">$0</h2>
-                </div>
             </div>
 
             <div class="export-actions">
-                <button onclick="exportarReporte('pdf')" class="btn-pro pdf">
-                    <i>📄</i> PDF PROFESIONAL
-                </button>
-                <button onclick="exportarReporte('excel')" class="btn-pro excel">
-                    <i>📊</i> EXCEL EMPRESARIAL
-                </button>
+                <button onclick="exportarReporte('pdf')" class="btn-pro pdf">📄 PDF</button>
+                <button onclick="exportarReporte('excel')" class="btn-pro excel">📊 EXCEL</button>
             </div>
         </aside>
 
@@ -70,18 +62,20 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="field">
-                            <label>Documento</label>
-                            <select id="tipo" required>
-                                <option value="Factura Venta">Factura Venta</option>
-                                <option value="Factura Compra">Factura Compra</option>
-                                <option value="Boleta Venta">Boleta Venta</option>
-                                <option value="Gasto Caja Chica">Gasto Caja Chica</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label>Detalle</label>
-                            <input type="text" id="detalle" placeholder="Descripción del movimiento..." required>
+                        <div class="input-row">
+                            <div class="field">
+                                <label>Documento</label>
+                                <select id="tipo" required>
+                                    <option value="Factura Venta">Factura Venta</option>
+                                    <option value="Factura Compra">Factura Compra</option>
+                                    <option value="Boleta Venta">Boleta Venta</option>
+                                    <option value="Gasto Caja Chica">Gasto Caja Chica</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Detalle</label>
+                                <input type="text" id="detalle" placeholder="Descripción..." required>
+                            </div>
                         </div>
                         <div class="money-grid">
                             <div class="money-field"><label>Neto</label><input type="number" id="neto"></div>
@@ -93,7 +87,7 @@
                 </section>
 
                 <section class="glass-card chart-section">
-                    <div class="card-header"><h3>Tendencia del Mes</h3></div>
+                    <div class="card-header"><h3>Tendencia Mensual</h3></div>
                     <div class="chart-container">
                         <canvas id="myChart"></canvas>
                     </div>
@@ -115,7 +109,7 @@
                                     <th>Fecha</th>
                                     <th>Tipo</th>
                                     <th>Detalle</th>
-                                    <th>Monto</th>
+                                    <th>Total</th>
                                     <th class="text-right">Acciones</th>
                                 </tr>
                             </thead>
