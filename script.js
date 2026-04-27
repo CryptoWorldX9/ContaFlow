@@ -2,13 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebas
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
-  authDomain: "contaflow-22b0e.firebaseapp.com",
-  projectId: "contaflow-22b0e",
-  storageBucket: "contaflow-22b0e.firebasestorage.app",
-  messagingSenderId: "482658784469",
-  appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
-  measurementId: "G-CTWWH372DE"
+    apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
+    authDomain: "contaflow-22b0e.firebaseapp.com",
+    projectId: "contaflow-22b0e",
+    storageBucket: "contaflow-22b0e.firebasestorage.app",
+    messagingSenderId: "482658784469",
+    appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
+    measurementId: "G-CTWWH372DE"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -18,13 +18,18 @@ const colRef = collection(db, "registros");
 let myChart = null;
 let datosGlobales = [];
 
-// --- LÓGICA DE CÁLCULO BIDIRECCIONAL ---
+// --- INICIALIZAR MES ACTUAL ---
+const selectorMes = document.getElementById('filtro-periodo');
+const hoy = new Date();
+selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+
+// --- LOGICA DE CALCULOS ---
 const netoIn = document.getElementById('neto');
 const ivaIn = document.getElementById('iva');
 const totalIn = document.getElementById('total');
 const tipoSel = document.getElementById('tipo');
 
-function calcularDesdeNeto() {
+function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
     const esFactura = tipoSel.value.includes("Factura");
     const iva = esFactura ? Math.round(neto * 0.19) : 0;
@@ -32,7 +37,7 @@ function calcularDesdeNeto() {
     totalIn.value = neto + iva;
 }
 
-function calcularDesdeTotal() {
+function calcularInverso() {
     const total = parseFloat(totalIn.value) || 0;
     const esFactura = tipoSel.value.includes("Factura");
     if (esFactura) {
@@ -45,19 +50,21 @@ function calcularDesdeTotal() {
     }
 }
 
-netoIn.addEventListener('input', calcularDesdeNeto);
-totalIn.addEventListener('input', calcularDesdeTotal);
-tipoSel.addEventListener('change', calcularDesdeNeto);
+netoIn.addEventListener('input', calcular);
+totalIn.addEventListener('input', calcularInverso);
+tipoSel.addEventListener('change', calcular);
 
-// --- FILTROS MODERNOS ---
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        btn.classList.toggle('active');
+// --- FILTROS DE CHIPS ---
+document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+        c.classList.toggle('active');
         render();
     });
 });
 
-// --- FIREBASE ACCIONES ---
+selectorMes.addEventListener('change', render);
+
+// --- GUARDAR ---
 document.getElementById('registro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
@@ -69,7 +76,7 @@ document.getElementById('registro-form').addEventListener('submit', async (e) =>
         neto: Number(netoIn.value),
         iva: Number(ivaIn.value),
         total: Number(totalIn.value),
-        created: new Date().getTime()
+        mesRef: document.getElementById('fecha').value.slice(0, 7) // Guardamos YYYY-MM
     };
 
     if(id) await updateDoc(doc(db, "registros", id), data);
@@ -77,82 +84,100 @@ document.getElementById('registro-form').addEventListener('submit', async (e) =>
 
     document.getElementById('registro-form').reset();
     document.getElementById('edit-id').value = "";
-    document.getElementById('btn-submit').innerText = "REGISTRAR MOVIMIENTO";
+    document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
 });
 
-// --- RENDERIZADO Y GRÁFICO ---
+// --- RENDERIZADO (EL CORAZON DEL SISTEMA) ---
 function render() {
-    const filtrosActivos = Array.from(document.querySelectorAll('.filter-btn.active')).map(b => b.dataset.val);
-    const filtrados = datosGlobales.filter(d => filtrosActivos.includes(d.tipo));
+    const periodoActivo = selectorMes.value;
+    const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
+    
+    // Filtramos por Mes Y por Tipo
+    const filtrados = datosGlobales.filter(d => 
+        d.fecha.startsWith(periodoActivo) && 
+        chipsActivos.includes(d.tipo)
+    );
 
     const tbody = document.getElementById('lista-datos');
     tbody.innerHTML = '';
     
-    let v = 0, c = 0, cc = 0, iv = 0, ic = 0;
+    let ventas = 0, compras = 0, caja = 0, ivaV = 0, ivaC = 0;
 
     filtrados.forEach(d => {
-        if(d.tipo.includes("Venta")) { v += d.total; if(d.tipo.includes("Factura")) iv += d.iva; }
-        else if(d.tipo.includes("Compra")) { c += d.total; if(d.tipo.includes("Factura")) ic += d.iva; }
-        else { cc += d.total; }
+        if(d.tipo === "Factura Venta" || d.tipo === "Boleta Venta") {
+            ventas += d.total;
+            if(d.tipo.includes("Factura")) ivaV += d.iva;
+        } else if(d.tipo === "Factura Compra") {
+            compras += d.total;
+            ivaC += d.iva;
+        } else {
+            caja += d.total;
+        }
 
         tbody.innerHTML += `
             <tr>
-                <td><span style="color:#8b949e">${d.fecha}</span></td>
+                <td>${d.fecha.split('-').reverse().join('/')}</td>
                 <td><span class="badge">${d.tipo}</span></td>
                 <td>${d.detalle}</td>
                 <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
                 <td class="text-right">
-                    <button onclick="prepararEdicion('${d.id}')" class="action-btn">✏️</button>
-                    <button onclick="eliminarRegistro('${d.id}')" class="action-btn" style="color:#da3633">🗑️</button>
+                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-right:15px">✏️</button>
+                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">🗑️</button>
                 </td>
             </tr>`;
     });
 
-    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString('es-CL')}`;
-    actualizarGrafico(v, c, cc);
+    // Actualizar Reporte Rápido
+    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
+    document.getElementById('stat-caja').innerText = `$${caja.toLocaleString('es-CL')}`;
+    document.getElementById('stat-iva').innerText = `$${(ivaV - ivaC).toLocaleString('es-CL')}`;
+    document.getElementById('stat-balance').innerText = `$${(ventas - compras - caja).toLocaleString('es-CL')}`;
+
+    actualizarGrafico(ventas, compras, caja);
 }
 
-function actualizarGrafico(v, c, cc) {
+function actualizarGrafico(v, co, ca) {
     const ctx = document.getElementById('myChart').getContext('2d');
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
-            labels: ['Ingresos', 'Costos', 'Caja'],
-            datasets: [{ 
-                data: [v, c, cc], 
-                backgroundColor: ['#38bdf8', '#a855f7', '#f59e0b'],
-                borderRadius: 12, barThickness: 40
+            labels: ['Ventas', 'Compras', 'Caja Chica'],
+            datasets: [{
+                data: [v, co, ca],
+                backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
+                borderWidth: 0,
+                hoverOffset: 20
             }]
         },
         options: { 
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } } }
+            plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 12 } } } },
+            cutout: '70%'
         }
     });
 }
 
-// --- EXPORTAR CORREGIDO ---
-window.exportarReporte = (formato) => {
-    if (formato === 'excel') {
-        const ws = XLSX.utils.json_to_sheet(datosGlobales);
+// --- EXPORTACION CORREGIDA ---
+window.exportarReporte = (tipo) => {
+    const periodo = selectorMes.value;
+    const paraExportar = datosGlobales.filter(d => d.fecha.startsWith(periodo));
+
+    if (tipo === 'excel') {
+        const ws = XLSX.utils.json_to_sheet(paraExportar);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "LibroContable");
-        XLSX.writeFile(wb, "ContaFlow_Ultra.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Contabilidad");
+        XLSX.writeFile(wb, `Reporte_${periodo}.xlsx`);
     } else {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("Reporte Maestro de Movimientos", 14, 20);
-        const rows = datosGlobales.map(d => [d.fecha, d.tipo, d.detalle, d.total]);
+        doc.text(`Reporte ContaFlow - Periodo ${periodo}`, 14, 20);
+        const rows = paraExportar.map(d => [d.fecha, d.tipo, d.detalle, d.total]);
         doc.autoTable({ head: [['Fecha', 'Tipo', 'Detalle', 'Total']], body: rows, startY: 30 });
-        doc.save("ContaFlow_Ultra.pdf");
+        doc.save(`Reporte_${periodo}.pdf`);
     }
 };
 
-window.eliminarRegistro = async (id) => { if(confirm("¿Eliminar permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
+window.eliminarRegistro = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "registros", id)); };
 window.prepararEdicion = (id) => {
     const d = datosGlobales.find(i => i.id === id);
     document.getElementById('edit-id').value = id;
