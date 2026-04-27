@@ -1,85 +1,113 @@
-:root {
-    --bg: #05070a;
-    --side-bg: #0d1117;
-    --card: #161b22;
-    --accent: #38bdf8;
-    --red: #f43f5e;
-    --border: #30363d;
-    --text: #f8fafc;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-body { background: var(--bg); color: var(--text); overflow-x: hidden; }
-
-.app-shell { display: flex; min-height: 100vh; }
-
-/* SIDEBAR COMPACTA */
-.sidebar {
-    width: 260px; background: var(--side-bg); border-right: 1px solid var(--border);
-    padding: 20px; display: flex; flex-direction: column; gap: 15px;
-    position: sticky; top: 0; height: 100vh;
-}
-
-.brand-box { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-.logo-icon { background: var(--accent); color: #000; width: 35px; height: 35px; border-radius: 8px; display: grid; place-items: center; font-weight: 800; }
-.brand-text { font-size: 1.1rem; font-weight: 800; }
-
-.period-selector { background: #1c2128; padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
-.period-selector label { font-size: 0.65rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 5px; }
-.month-picker { background: transparent; border: none; color: white; font-size: 0.9rem; width: 100%; color-scheme: dark; }
-
-.stat-card { padding: 12px; border-radius: 12px; border-left: 4px solid; background: #0d1117; margin-bottom: 8px; }
-.stat-card.blue { border-color: var(--accent); }
-.stat-card.red { border-color: var(--red); }
-.stat-card.purple { border-color: #a855f7; }
-.stat-card .label { font-size: 0.65rem; color: #8b949e; text-transform: uppercase; }
-.stat-card h2 { font-size: 1.2rem; margin-top: 2px; }
-
-/* BOTONES EXPORTAR REDISEÑADOS */
-.export-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; padding-top: 10px; }
-.btn-pro {
-    padding: 12px 5px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem;
-    cursor: pointer; transition: 0.2s; color: white;
-}
-.btn-pro.pdf { background: #3d444d; border: 1px solid #f43f5e; color: #f43f5e; }
-.btn-pro.excel { background: #3d444d; border: 1px solid #10b981; color: #10b981; }
-.btn-pro:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-/* MAIN CONTENT */
-.main-content { flex: 1; padding: 25px; }
-.dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
-.table-section { grid-column: span 2; }
-
-.glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
-.card-header h3 { font-size: 1rem; margin-bottom: 15px; color: var(--accent); }
-
-/* FORMULARIO */
-.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field { margin-bottom: 12px; }
-.field label { font-size: 0.75rem; color: #8b949e; margin-bottom: 4px; display: block; }
-input, select { width: 100%; padding: 10px; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 0.9rem; }
-
-.money-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-.total-hl input { color: var(--accent); font-weight: 800; }
-
-.btn-confirm { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-/* GRAFICO */
-.chart-container { height: 220px; position: relative; }
-
-/* TABLA */
-.table-header-pro { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.filter-chips { display: flex; gap: 8px; }
-.chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: white; cursor: pointer; font-size: 0.75rem; }
-.chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-.table-responsive { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 12px; color: #8b949e; font-size: 0.75rem; border-bottom: 1px solid var(--border); }
-td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-.text-right { text-align: right; }
+/* --- MANTENER TODO EL CÓDIGO ANTERIOR IGUAL HASTA LLEGAR A @MEDIA --- */
 
 @media (max-width: 1024px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-    .sidebar { position: relative; height: auto; width: 100%; }
+    .app-shell {
+        flex-direction: column; /* Cambia de horizontal a vertical */
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 15px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        gap: 15px;
+    }
+
+    .brand-box {
+        justify-content: center;
+    }
+
+    /* Reporte Rápido en modo carrusel horizontal para móvil */
+    .nav-menu {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding-bottom: 10px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .menu-label {
+        display: none; /* Ahorramos espacio en móvil */
+    }
+
+    .stat-card {
+        min-width: 140px;
+        flex-shrink: 0;
+        scroll-snap-align: start;
+        margin-bottom: 0;
+        padding: 10px;
+    }
+
+    .stat-card h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Botones de exportación uno al lado del otro */
+    .export-actions {
+        flex-direction: row;
+        margin-top: 5px;
+    }
+
+    .btn-pro {
+        flex: 1;
+        font-size: 0.7rem;
+        padding: 10px;
+    }
+
+    /* Ajuste de Contenido Principal */
+    .main-content {
+        padding: 15px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Una sola columna */
+        gap: 15px;
+    }
+
+    .glass-card {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    /* Formulario en móvil */
+    .input-row {
+        grid-template-columns: 1fr; /* Campos uno bajo otro */
+        gap: 10px;
+    }
+
+    .money-grid {
+        grid-template-columns: 1fr; /* Neto, IVA y Total apilados */
+        gap: 8px;
+    }
+
+    /* Tabla responsiva mejorada */
+    .table-header-pro {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .filter-chips {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .chip {
+        white-space: nowrap; /* Evita que el texto de los filtros se corte */
+    }
+
+    td {
+        font-size: 0.8rem;
+        padding: 10px 5px;
+    }
+
+    /* Hacer los botones de acción más fáciles de tocar */
+    .text-right button {
+        padding: 8px;
+        font-size: 1.4rem;
+    }
 }
