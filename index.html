@@ -13,105 +13,78 @@
     <div class="sidebar">
         <h2>ContaFlow <span>Pro</span></h2>
         <div class="stats-brief">
-            <div class="stat-item">
-                <span>Ventas Mes</span>
-                <p id="stat-ventas">$0</p>
-            </div>
-            <div class="stat-item">
-                <span>IVA a Pago</span>
-                <p id="stat-iva">$0</p>
-            </div>
+            <div class="stat-item"><span>Ventas Mes</span><p id="stat-ventas">$0</p></div>
+            <div class="stat-item"><span>IVA a Pago</span><p id="stat-iva">$0</p></div>
+        </div>
+        <div class="filters-side">
+            <label>Filtrar por Mes</label>
+            <input type="month" id="filtro-mes">
+            <button onclick="resetFiltro()" class="btn-secondary">Ver Todo</button>
         </div>
     </div>
 
     <main class="content">
         <header>
-            <div class="header-info">
-                <h1>Panel de Control Contable</h1>
-                <p>Registro para F29 y Renta Anual</p>
-            </div>
-            <button onclick="generarPDF()" class="btn-primary">Descargar Reporte PDF</button>
+            <h1>Panel Contable</h1>
+            <button onclick="generarPDF()" class="btn-primary">Exportar PDF</button>
         </header>
 
         <div class="dashboard-grid">
             <section class="card">
-                <h3><i class="icon">➕</i> Nuevo Movimiento</h3>
+                <h3>➕ Nuevo Movimiento</h3>
                 <form id="registro-form">
+                    <input type="hidden" id="edit-id">
+                    <div class="input-group"><label>Fecha</label><input type="date" id="fecha" required></div>
                     <div class="input-group">
-                        <label>Fecha del Documento</label>
-                        <input type="date" id="fecha" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Categoría de Registro</label>
+                        <label>Categoría</label>
                         <select id="categoria" required>
-                            <option value="negocio">Compra/Venta (Afecta IVA)</option>
-                            <option value="cajachica">Caja Chica / Gastos Varios (Renta)</option>
+                            <option value="negocio">Compra/Venta (IVA)</option>
+                            <option value="cajachica">Caja Chica (Renta)</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>Tipo de Documento</label>
+                        <label>Documento</label>
                         <select id="tipo" required>
-                            <option value="Factura Venta">Factura Venta (Débito)</option>
-                            <option value="Factura Compra">Factura Compra (Crédito)</option>
+                            <option value="Factura Venta">Factura Venta</option>
+                            <option value="Factura Compra">Factura Compra</option>
                             <option value="Boleta Venta">Boleta Venta</option>
-                            <option value="Gasto con Boleta">Gasto con Boleta (Caja Chica)</option>
-                            <option value="Voucher/Recibo">Voucher/Recibo (Caja Chica)</option>
+                            <option value="Gasto con Boleta">Gasto Caja Chica</option>
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label>Detalle del Gasto/Venta</label>
-                        <input type="text" id="detalle" placeholder="Ej: Kit Distribución L200" required>
-                    </div>
+                    <div class="input-group"><label>Detalle</label><input type="text" id="detalle" required></div>
                     <div class="grid-3-col">
-                        <div class="input-group">
-                            <label>Monto Neto</label>
-                            <input type="number" id="neto" placeholder="$" required>
-                        </div>
-                        <div class="input-group">
-                            <label>IVA (19%)</label>
-                            <input type="number" id="iva" readonly>
-                        </div>
-                        <div class="input-group">
-                            <label>Total</label>
-                            <input type="number" id="total" readonly>
-                        </div>
+                        <input type="number" id="neto" placeholder="Neto" required>
+                        <input type="number" id="iva" placeholder="IVA" readonly>
+                        <input type="number" id="total" placeholder="Total" readonly>
                     </div>
-                    <button type="submit" class="btn-save">Registrar Movimiento</button>
+                    <button type="submit" id="btn-submit" class="btn-save">Guardar Registro</button>
                 </form>
             </section>
 
-            <section class="card">
-                <h3><i class="icon">📊</i> Flujo de Caja</h3>
+            <section class="card chart-container">
+                <h3>📊 Flujo de Caja</h3>
                 <canvas id="myChart"></canvas>
             </section>
         </div>
 
         <section class="card table-container">
-            <div class="table-header">
-                <h3>Historial de Movimientos</h3>
-                <div class="filters">
-                    <button onclick="filtrar('todos')">Todos</button>
-                    <button onclick="filtrar('negocio')">Solo IVA</button>
-                    <button onclick="filtrar('cajachica')">Caja Chica</button>
-                </div>
-            </div>
+            <h3>Historial de Movimientos</h3>
             <table id="tabla-registros">
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Categoría</th>
                         <th>Tipo</th>
                         <th>Detalle</th>
                         <th>Neto</th>
                         <th>IVA</th>
                         <th>Total</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="lista-datos"></tbody>
             </table>
         </section>
     </main>
-
     <script type="module" src="script.js"></script>
 </body>
 </html>
