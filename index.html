@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro</title>
+    <title>ContaFlow Pro v2</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 1024px)">
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -20,107 +16,79 @@
                 <div class="logo-icon">CF</div>
                 <div class="brand-text">ContaFlow<span>PRO</span></div>
             </div>
-
             <div class="period-selector">
                 <label>PERÍODO</label>
                 <input type="month" id="filtro-periodo" class="month-picker">
             </div>
-            
             <div class="nav-menu">
-                <div class="menu-label">REPORTE RÁPIDO</div>
-                <div class="stat-card blue">
-                    <span class="label">Ventas</span>
-                    <h2 id="stat-ventas">$0</h2>
-                </div>
-                <div class="stat-card red">
-                    <span class="label">Caja Chica</span>
-                    <h2 id="stat-caja">$0</h2>
-                </div>
-                <div class="stat-card purple">
-                    <span class="label">IVA Mes</span>
-                    <h2 id="stat-iva">$0</h2>
-                </div>
+                <div class="stat-card blue"><span class="label">Ventas</span><h2 id="stat-ventas">$0</h2></div>
+                <div class="stat-card red"><span class="label">Gastos</span><h2 id="stat-gastos">$0</h2></div>
+                <div class="stat-card purple"><span class="label">IVA Neto</span><h2 id="stat-iva">$0</h2></div>
             </div>
-
-            <div class="export-actions">
-                <button onclick="exportarReporte('pdf')" class="btn-pro pdf">📄 PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-pro excel">📊 EXCEL</button>
-            </div>
+            <button class="btn-settings" id="open-config">⚙️ Configuración Pro</button>
         </aside>
 
         <main class="main-content">
-            <div class="dashboard-grid">
-                <section class="glass-card form-section">
-                    <div class="card-header"><h3>Ingreso de Datos</h3></div>
-                    <form id="registro-form">
-                        <input type="hidden" id="edit-id">
-                        <div class="input-row">
-                            <div class="field"><label>Fecha</label><input type="date" id="fecha" required></div>
-                            <div class="field">
-                                <label>Categoría</label>
-                                <select id="categoria" required>
-                                    <option value="negocio">Libro Compra/Venta</option>
-                                    <option value="cajachica">Caja Chica</option>
-                                </select>
-                            </div>
+            <section class="glass-card">
+                <form id="registro-form">
+                    <input type="hidden" id="edit-id">
+                    <div class="input-row">
+                        <div class="field"><label>Fecha</label><input type="date" id="fecha" required></div>
+                        <div class="field">
+                            <label>Clasificación</label>
+                            <select id="item-tipo"></select>
                         </div>
-                        <div class="input-row">
-                            <div class="field">
-                                <label>Documento</label>
-                                <select id="tipo" required>
-                                    <option value="Factura Venta">Factura Venta</option>
-                                    <option value="Factura Compra">Factura Compra</option>
-                                    <option value="Boleta Venta">Boleta Venta</option>
-                                    <option value="Gasto Caja Chica">Gasto Caja Chica</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Detalle</label>
-                                <input type="text" id="detalle" placeholder="Descripción..." required>
-                            </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="field">
+                            <label>Documento</label>
+                            <select id="tipo" required>
+                                <option value="Factura Venta">Factura Venta</option>
+                                <option value="Boleta Venta">Boleta Venta</option>
+                                <option value="Factura Compra">Factura Compra</option>
+                                <option value="Gasto Caja Chica">Gasto Caja Chica</option>
+                            </select>
                         </div>
-                        <div class="money-grid">
-                            <div class="money-field"><label>Neto</label><input type="number" id="neto"></div>
-                            <div class="money-field"><label>IVA</label><input type="number" id="iva" readonly></div>
-                            <div class="money-field total-hl"><label>Total</label><input type="number" id="total"></div>
-                        </div>
-                        <button type="submit" id="btn-submit" class="btn-confirm">GUARDAR REGISTRO</button>
-                    </form>
-                </section>
+                        <div class="field"><label>Proveedor/RUT</label><input type="text" id="proveedor" placeholder="Opcional"></div>
+                    </div>
+                    <div class="field"><label>Detalle de Productos</label><textarea id="detalle" rows="3" required></textarea></div>
+                    <div class="money-grid">
+                        <div class="money-field"><label>Neto</label><input type="number" id="neto"></div>
+                        <div class="money-field"><label>IVA</label><input type="number" id="iva" readonly></div>
+                        <div class="money-field total-hl"><label>Total</label><input type="number" id="total"></div>
+                    </div>
+                    <button type="submit" id="btn-submit" class="btn-confirm">GUARDAR REGISTRO</button>
+                </form>
+            </section>
 
-                <section class="glass-card chart-section">
-                    <div class="card-header"><h3>Tendencia Mensual</h3></div>
-                    <div class="chart-container">
-                        <canvas id="myChart"></canvas>
-                    </div>
-                </section>
-
-                <section class="glass-card table-section">
-                    <div class="table-header-pro">
-                        <h3>Maestro de Movimientos</h3>
-                        <div class="filter-chips">
-                            <button class="chip active" data-val="Factura Venta">Ventas</button>
-                            <button class="chip active" data-val="Factura Compra">Compras</button>
-                            <button class="chip active" data-val="Gasto Caja Chica">Caja</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Detalle</th>
-                                    <th>Total</th>
-                                    <th class="text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-datos"></tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
+            <section class="glass-card table-section">
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Fecha</th><th>Ítem</th><th>Detalle/Proveedor</th><th>Total</th><th>Acción</th></tr></thead>
+                        <tbody id="lista-datos"></tbody>
+                    </table>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <div id="modal-config" class="modal" style="display:none;">
+        <div class="modal-content glass-card">
+            <h3>⚙️ Ajustes del Sistema</h3>
+            <div class="config-section">
+                <label>IVA Actual (%)</label>
+                <input type="number" id="config-iva-val" value="19">
+            </div>
+            <div class="config-section">
+                <label>Gestionar Clasificaciones</label>
+                <div class="add-tag">
+                    <input type="text" id="new-tag-name" placeholder="Ej: Pago Internet">
+                    <button id="add-tag-btn">Añadir</button>
+                </div>
+                <ul id="tag-list" class="tag-list"></ul>
+            </div>
+            <button class="btn-confirm" id="close-config">CERRAR Y APLICAR</button>
+        </div>
     </div>
     <script type="module" src="script.js"></script>
 </body>
