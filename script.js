@@ -18,12 +18,10 @@ const colRef = collection(db, "registros");
 let myChart = null;
 let datosGlobales = [];
 
-// --- INICIALIZAR MES ---
 const selectorMes = document.getElementById('filtro-periodo');
 const hoy = new Date();
 selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
 
-// --- CALCULOS ---
 const netoIn = document.getElementById('neto');
 const ivaIn = document.getElementById('iva');
 const totalIn = document.getElementById('total');
@@ -54,31 +52,24 @@ netoIn.addEventListener('input', calcular);
 totalIn.addEventListener('input', calcularInverso);
 tipoSel.addEventListener('change', calcular);
 
-// --- RENDERIZADO ---
 function render() {
     const periodoActivo = selectorMes.value;
     const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
-    
-    const filtrados = datosGlobales.filter(d => 
-        d.fecha.startsWith(periodoActivo) && 
-        chipsActivos.includes(d.tipo)
-    );
+    const filtrados = datosGlobales.filter(d => d.fecha.startsWith(periodoActivo) && chipsActivos.includes(d.tipo));
 
     const tbody = document.getElementById('lista-datos');
     tbody.innerHTML = '';
     
-    let ventas = 0, compras = 0, caja = 0, ivaV = 0, ivaC = 0;
+    let v = 0, c = 0, ca = 0, iv = 0, ic = 0;
 
     filtrados.forEach(d => {
         if(d.tipo.includes("Venta") || d.tipo.includes("Boleta")) {
-            ventas += d.total;
-            if(d.tipo.includes("Factura")) ivaV += d.iva;
+            v += d.total;
+            if(d.tipo.includes("Factura")) iv += d.iva;
         } else if(d.tipo.includes("Compra")) {
-            compras += d.total;
+            c += d.total;
             ivaC += d.iva;
-        } else {
-            caja += d.total;
-        }
+        } else { ca += d.total; }
 
         tbody.innerHTML += `
             <tr>
@@ -87,17 +78,17 @@ function render() {
                 <td>${d.detalle}</td>
                 <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
                 <td class="text-right">
-                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; margin-right:10px">✏️</button>
-                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer">🗑️</button>
+                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">✏️</button>
+                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">🗑️</button>
                 </td>
             </tr>`;
     });
 
-    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
-    document.getElementById('stat-caja').innerText = `$${caja.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(ivaV - ivaC).toLocaleString('es-CL')}`;
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString('es-CL')}`;
+    document.getElementById('stat-caja').innerText = `$${ca.toLocaleString('es-CL')}`;
+    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString('es-CL')}`;
 
-    actualizarGrafico(ventas, compras, caja);
+    actualizarGrafico(v, c, ca);
 }
 
 function actualizarGrafico(v, co, ca) {
@@ -108,45 +99,27 @@ function actualizarGrafico(v, co, ca) {
         data: {
             labels: ['Ventas', 'Compras', 'Caja Chica'],
             datasets: [{
-                label: 'Pesos ($)',
                 data: [v, co, ca],
                 backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
-                borderRadius: 8,
-                barThickness: 50
+                borderRadius: 8
             }]
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                x: { grid: { display: false }, ticks: { color: '#8b949e' } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
-// --- BOTONES EXPORTAR ---
-window.exportarReporte = (tipo) => {
-    const periodo = selectorMes.value;
-    const paraExportar = datosGlobales.filter(d => d.fecha.startsWith(periodo));
-    if (tipo === 'excel') {
-        const ws = XLSX.utils.json_to_sheet(paraExportar);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Contabilidad");
-        XLSX.writeFile(wb, `Reporte_${periodo}.xlsx`);
-    } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`ContaFlow - Periodo ${periodo}`, 14, 20);
-        const rows = paraExportar.map(d => [d.fecha, d.tipo, d.detalle, d.total]);
-        doc.autoTable({ head: [['Fecha', 'Tipo', 'Detalle', 'Total']], body: rows, startY: 30 });
-        doc.save(`Reporte_${periodo}.pdf`);
-    }
+window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
+window.prepararEdicion = (id) => {
+    const d = datosGlobales.find(i => i.id === id);
+    document.getElementById('edit-id').value = id;
+    document.getElementById('fecha').value = d.fecha;
+    document.getElementById('detalle').value = d.detalle;
+    netoIn.value = d.neto; ivaIn.value = d.iva; totalIn.value = d.total;
+    tipoSel.value = d.tipo; document.getElementById('categoria').value = d.categoria;
+    document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// Acciones Firebase
 document.getElementById('registro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
@@ -165,18 +138,6 @@ document.getElementById('registro-form').addEventListener('submit', async (e) =>
     document.getElementById('edit-id').value = "";
     document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
 });
-
-window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
-window.prepararEdicion = (id) => {
-    const d = datosGlobales.find(i => i.id === id);
-    document.getElementById('edit-id').value = id;
-    document.getElementById('fecha').value = d.fecha;
-    document.getElementById('detalle').value = d.detalle;
-    netoIn.value = d.neto; ivaIn.value = d.iva; totalIn.value = d.total;
-    tipoSel.value = d.tipo; document.getElementById('categoria').value = d.categoria;
-    document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
 
 document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
 selectorMes.addEventListener('change', render);
