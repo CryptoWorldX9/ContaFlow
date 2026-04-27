@@ -8,13 +8,12 @@
     --text: #f8fafc;
 }
 
-/* 1. RESET Y BASES */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 body { background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.5; }
 
 .app-shell { display: flex; min-height: 100vh; width: 100%; }
 
-/* 2. SIDEBAR (ESCRITORIO) */
+/* SIDEBAR ESCRITORIO */
 .sidebar {
     width: 260px; background: var(--side-bg); border-right: 1px solid var(--border);
     padding: 20px; display: flex; flex-direction: column; gap: 15px;
@@ -41,27 +40,24 @@ body { background: var(--bg); color: var(--text); overflow-x: hidden; line-heigh
 .btn-pro.pdf { background: #3d444d; border: 1px solid #f43f5e; color: #f43f5e; }
 .btn-pro.excel { background: #3d444d; border: 1px solid #10b981; color: #10b981; }
 
-/* 3. CONTENIDO PRINCIPAL (ESCRITORIO) */
+/* CONTENIDO PRINCIPAL ESCRITORIO */
 .main-content { flex: 1; padding: 25px; width: 100%; }
 .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; max-width: 1400px; margin: 0 auto; }
 .table-section { grid-column: span 2; }
 .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
-.card-header h3 { font-size: 1rem; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+.card-header h3 { font-size: 1rem; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; }
 
-/* FORMULARIO */
 .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .field { margin-bottom: 12px; }
 .field label { font-size: 0.75rem; color: #8b949e; margin-bottom: 4px; display: block; }
 input, select { width: 100%; padding: 10px; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 0.9rem; outline: none; }
-input:focus, select:focus { border-color: var(--accent); }
 
 .money-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-.total-hl input { color: var(--accent); font-weight: 800; border-color: var(--accent); }
-.btn-confirm { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+.total-hl input { color: var(--accent); font-weight: 800; }
+.btn-confirm { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
 .chart-container { height: 220px; position: relative; }
 
-/* TABLA */
 .table-header-pro { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .filter-chips { display: flex; gap: 8px; }
 .chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: white; cursor: pointer; font-size: 0.75rem; }
@@ -69,55 +65,6 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .table-responsive { overflow-x: auto; width: 100%; }
 table { width: 100%; border-collapse: collapse; min-width: 600px; }
-th { text-align: left; padding: 12px; color: #8b949e; font-size: 0.75rem; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+th { text-align: left; padding: 12px; color: #8b949e; font-size: 0.75rem; border-bottom: 1px solid var(--border); }
 td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
 .text-right { text-align: right; }
-
-/* 4. MÓVIL (TIPO APP - CORRECCIÓN DE ANCHO Y TAMAÑO) */
-@media (max-width: 1024px) {
-    .app-shell { flex-direction: column; }
-    
-    .sidebar {
-        width: 100%; height: auto; position: relative; padding: 20px;
-        border-right: none; border-bottom: 1px solid var(--border);
-        display: flex; flex-direction: column; 
-    }
-
-    .brand-box { justify-content: center; margin-bottom: 20px; }
-    .brand-text { font-size: 1.3rem; }
-
-    .period-selector { margin-bottom: 15px; padding: 15px; }
-    .month-picker { font-size: 1.1rem; height: 45px; }
-
-    .nav-menu {
-        display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 15px 0;
-        width: 100%; -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Ocultar scrollbar en Firefox */
-    }
-    .nav-menu::-webkit-scrollbar { display: none; } /* Ocultar scrollbar en Chrome/Safari */
-
-    .stat-card {
-        min-width: 160px; margin-bottom: 0; flex-shrink: 0; padding: 15px;
-    }
-    .stat-card h2 { font-size: 1.3rem; }
-    .menu-label { display: none; }
-
-    .export-actions { margin-top: 10px; width: 100%; }
-    .btn-pro { height: 48px; font-size: 0.85rem; }
-
-    .main-content { padding: 15px; }
-    .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
-    .table-section { grid-column: span 1; }
-
-    /* Inputs grandes para dedos */
-    input, select, .btn-confirm { font-size: 1rem !important; height: 50px; }
-    .field label { font-size: 0.9rem; }
-    
-    .money-grid { grid-template-columns: 1fr; gap: 10px; padding: 20px; }
-    
-    .table-header-pro { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .filter-chips { width: 100%; overflow-x: auto; padding-bottom: 8px; }
-    .chip { padding: 10px 15px; font-size: 0.85rem; white-space: nowrap; }
-    
-    td { font-size: 0.9rem; padding: 15px 10px; }
-}
