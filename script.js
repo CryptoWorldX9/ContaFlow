@@ -18,21 +18,18 @@ const colRef = collection(db, "registros");
 let myChart = null;
 let datosGlobales = [];
 
-// --- INICIALIZAR MES ---
 const selectorMes = document.getElementById('filtro-periodo');
 const hoy = new Date();
 selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
 
-// --- CAMPOS ---
 const netoIn = document.getElementById('neto');
 const ivaIn = document.getElementById('iva');
 const totalIn = document.getElementById('total');
-const tipoDoc = document.getElementById('tipo');
+const tipoSel = document.getElementById('tipo');
 
-// --- LÓGICA DE CÁLCULOS (IGUAL A TU VERSIÓN PRO) ---
 function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
-    const esFactura = tipoDoc.value.includes("Factura");
+    const esFactura = tipoSel.value.includes("Factura");
     const iva = esFactura ? Math.round(neto * 0.19) : 0;
     ivaIn.value = iva;
     totalIn.value = neto + iva;
@@ -40,7 +37,7 @@ function calcular() {
 
 function calcularInverso() {
     const total = parseFloat(totalIn.value) || 0;
-    const esFactura = tipoDoc.value.includes("Factura");
+    const esFactura = tipoSel.value.includes("Factura");
     if (esFactura) {
         const neto = Math.round(total / 1.19);
         netoIn.value = neto;
@@ -53,41 +50,33 @@ function calcularInverso() {
 
 netoIn.addEventListener('input', calcular);
 totalIn.addEventListener('input', calcularInverso);
-tipoDoc.addEventListener('change', calcular);
+tipoSel.addEventListener('change', calcular);
 
-// --- RENDERIZADO Y FILTROS ---
 function render() {
     const periodoActivo = selectorMes.value;
     const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
-    
-    // Filtrar por mes y por los botones de arriba
-    const filtrados = datosGlobales.filter(d => {
-        const coincideMes = d.fecha.startsWith(periodoActivo);
-        const coincideTipo = chipsActivos.some(chip => d.tipo.includes(chip));
-        return coincideMes && coincideTipo;
-    });
+    const filtrados = datosGlobales.filter(d => d.fecha.startsWith(periodoActivo) && chipsActivos.includes(d.tipo));
 
     const tbody = document.getElementById('lista-datos');
     tbody.innerHTML = '';
     
-    let ventas = 0, gastos = 0, ivaMes = 0;
+    let v = 0, c = 0, ca = 0, iv = 0, ic = 0;
 
     filtrados.forEach(d => {
-        const esVenta = d.tipo.includes("Venta") || d.tipo.includes("Boleta");
-        if(esVenta) {
-            ventas += d.total;
-            if(d.tipo.includes("Factura")) ivaMes += d.iva;
-        } else {
-            gastos += d.total;
-            if(d.tipo.includes("Factura")) ivaMes -= d.iva;
-        }
+        if(d.tipo.includes("Venta") || d.tipo.includes("Boleta")) {
+            v += d.total;
+            if(d.tipo.includes("Factura")) iv += d.iva;
+        } else if(d.tipo.includes("Compra")) {
+            c += d.total;
+            ivaC += d.iva;
+        } else { ca += d.total; }
 
         tbody.innerHTML += `
             <tr>
                 <td>${d.fecha.split('-').reverse().join('/')}</td>
-                <td><span style="color:var(--accent)">${d.itemTipo || 'General'}</span><br><small>${d.tipo}</small></td>
-                <td><strong>${d.proveedor || 'S/I'}</strong><br>${d.detalle.replace(/\n/g, '<br>')}</td>
-                <td>$${d.total.toLocaleString('es-CL')}</td>
+                <td><span style="color:var(--accent)">${d.tipo}</span></td>
+                <td>${d.detalle}</td>
+                <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
                 <td class="text-right">
                     <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">✏️</button>
                     <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">🗑️</button>
@@ -95,24 +84,23 @@ function render() {
             </tr>`;
     });
 
-    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
-    document.getElementById('stat-gastos').innerText = `$${gastos.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${ivaMes.toLocaleString('es-CL')}`;
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString('es-CL')}`;
+    document.getElementById('stat-caja').innerText = `$${ca.toLocaleString('es-CL')}`;
+    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString('es-CL')}`;
 
-    actualizarGrafico(ventas, gastos);
+    actualizarGrafico(v, c, ca);
 }
 
-// --- GRÁFICO (CHART.JS) ---
-function actualizarGrafico(v, g) {
+function actualizarGrafico(v, co, ca) {
     const ctx = document.getElementById('myChart').getContext('2d');
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Ventas', 'Gastos'],
+            labels: ['Ventas', 'Compras', 'Caja Chica'],
             datasets: [{
-                data: [v, g],
-                backgroundColor: ['#38bdf8', '#f43f5e'],
+                data: [v, co, ca],
+                backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
                 borderRadius: 8
             }]
         },
@@ -120,20 +108,14 @@ function actualizarGrafico(v, g) {
     });
 }
 
-// --- ACCIONES FIREBASE ---
-window.eliminarRegistro = async (id) => { if(confirm("¿Seguro de eliminar este registro?")) await deleteDoc(doc(db, "registros", id)); };
-
+window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
 window.prepararEdicion = (id) => {
     const d = datosGlobales.find(i => i.id === id);
     document.getElementById('edit-id').value = id;
     document.getElementById('fecha').value = d.fecha;
-    document.getElementById('item-tipo').value = d.itemTipo || 'Mercadería';
-    document.getElementById('tipo').value = d.tipo;
-    document.getElementById('proveedor').value = d.proveedor || '';
     document.getElementById('detalle').value = d.detalle;
-    netoIn.value = d.neto; 
-    ivaIn.value = d.iva; 
-    totalIn.value = d.total;
+    netoIn.value = d.neto; ivaIn.value = d.iva; totalIn.value = d.total;
+    tipoSel.value = d.tipo; document.getElementById('categoria').value = d.categoria;
     document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -143,31 +125,22 @@ document.getElementById('registro-form').addEventListener('submit', async (e) =>
     const id = document.getElementById('edit-id').value;
     const data = {
         fecha: document.getElementById('fecha').value,
-        itemTipo: document.getElementById('item-tipo').value,
+        categoria: document.getElementById('categoria').value,
         tipo: document.getElementById('tipo').value,
-        proveedor: document.getElementById('proveedor').value,
         detalle: document.getElementById('detalle').value,
         neto: Number(netoIn.value),
         iva: Number(ivaIn.value),
         total: Number(totalIn.value)
     };
-
     if(id) await updateDoc(doc(db, "registros", id), data);
     else await addDoc(colRef, data);
-
-    e.target.reset();
+    document.getElementById('registro-form').reset();
     document.getElementById('edit-id').value = "";
     document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
 });
 
-// --- EVENTOS DE INTERFAZ ---
-document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { 
-    c.classList.toggle('active'); 
-    render(); 
-}));
-
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
 selectorMes.addEventListener('change', render);
-
 onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
     datosGlobales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     render();
