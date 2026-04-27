@@ -7,141 +7,91 @@ const firebaseConfig = {
     projectId: "contaflow-22b0e",
     storageBucket: "contaflow-22b0e.firebasestorage.app",
     messagingSenderId: "482658784469",
-    appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
-    measurementId: "G-CTWWH372DE"
+    appId: "1:482658784469:web:24667c3581affb1ad1fe5c"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const colRef = collection(db, "registros");
 
-let myChart = null;
-let datosGlobales = [];
+// --- GESTIÓN DE CONFIGURACIÓN (LOCALSTORAGE) ---
+let opcionesClasificacion = JSON.parse(localStorage.getItem('tags')) || ["Mercadería", "Servicio", "Venta", "Insumos"];
+let tasaIva = localStorage.getItem('ivaVal') || 19;
 
-const selectorMes = document.getElementById('filtro-periodo');
-const hoy = new Date();
-selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+function actualizarUIConfig() {
+    const select = document.getElementById('item-tipo');
+    const lista = document.getElementById('tag-list');
+    select.innerHTML = ''; lista.innerHTML = '';
+    
+    opcionesClasificacion.forEach((tag, index) => {
+        select.innerHTML += `<option value="${tag}">${tag}</option>`;
+        lista.innerHTML += `<li>${tag} <button onclick="window.removeTag(${index})">✕</button></li>`;
+    });
+    localStorage.setItem('tags', JSON.stringify(opcionesClasificacion));
+}
 
+window.removeTag = (idx) => { opcionesClasificacion.splice(idx, 1); actualizarUIConfig(); };
+document.getElementById('add-tag-btn').onclick = () => {
+    const val = document.getElementById('new-tag-name').value;
+    if(val) { opcionesClasificacion.push(val); document.getElementById('new-tag-name').value=''; actualizarUIConfig(); }
+};
+
+// --- MODAL ---
+document.getElementById('open-config').onclick = () => document.getElementById('modal-config').style.display='flex';
+document.getElementById('close-config').onclick = () => {
+    tasaIva = document.getElementById('config-iva-val').value;
+    localStorage.setItem('ivaVal', tasaIva);
+    document.getElementById('modal-config').style.display='none';
+};
+
+// --- CÁLCULOS ---
 const netoIn = document.getElementById('neto');
 const ivaIn = document.getElementById('iva');
 const totalIn = document.getElementById('total');
-const tipoSel = document.getElementById('tipo');
+const tipoDoc = document.getElementById('tipo');
 
 function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
-    const esFactura = tipoSel.value.includes("Factura");
-    const iva = esFactura ? Math.round(neto * 0.19) : 0;
-    ivaIn.value = iva;
-    totalIn.value = neto + iva;
+    const esFactura = tipoDoc.value.includes("Factura");
+    const iva = esFactura ? Math.round(neto * (tasaIva / 100)) : 0;
+    ivaIn.value = iva; totalIn.value = neto + iva;
 }
 
-function calcularInverso() {
-    const total = parseFloat(totalIn.value) || 0;
-    const esFactura = tipoSel.value.includes("Factura");
-    if (esFactura) {
-        const neto = Math.round(total / 1.19);
-        netoIn.value = neto;
-        ivaIn.value = total - neto;
-    } else {
-        netoIn.value = total;
-        ivaIn.value = 0;
-    }
-}
+netoIn.oninput = calcular;
+tipoDoc.onchange = calcular;
 
-netoIn.addEventListener('input', calcular);
-totalIn.addEventListener('input', calcularInverso);
-tipoSel.addEventListener('change', calcular);
-
-function render() {
-    const periodoActivo = selectorMes.value;
-    const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
-    const filtrados = datosGlobales.filter(d => d.fecha.startsWith(periodoActivo) && chipsActivos.includes(d.tipo));
-
-    const tbody = document.getElementById('lista-datos');
-    tbody.innerHTML = '';
-    
-    let v = 0, c = 0, ca = 0, iv = 0, ic = 0;
-
-    filtrados.forEach(d => {
-        if(d.tipo.includes("Venta") || d.tipo.includes("Boleta")) {
-            v += d.total;
-            if(d.tipo.includes("Factura")) iv += d.iva;
-        } else if(d.tipo.includes("Compra")) {
-            c += d.total;
-            ivaC += d.iva;
-        } else { ca += d.total; }
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${d.fecha.split('-').reverse().join('/')}</td>
-                <td><span style="color:var(--accent)">${d.tipo}</span></td>
-                <td>${d.detalle}</td>
-                <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
-                <td class="text-right">
-                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">✏️</button>
-                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem">🗑️</button>
-                </td>
-            </tr>`;
-    });
-
-    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString('es-CL')}`;
-    document.getElementById('stat-caja').innerText = `$${ca.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString('es-CL')}`;
-
-    actualizarGrafico(v, c, ca);
-}
-
-function actualizarGrafico(v, co, ca) {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    if (myChart) myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Ventas', 'Compras', 'Caja Chica'],
-            datasets: [{
-                data: [v, co, ca],
-                backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
-                borderRadius: 8
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-}
-
-window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
-window.prepararEdicion = (id) => {
-    const d = datosGlobales.find(i => i.id === id);
-    document.getElementById('edit-id').value = id;
-    document.getElementById('fecha').value = d.fecha;
-    document.getElementById('detalle').value = d.detalle;
-    netoIn.value = d.neto; ivaIn.value = d.iva; totalIn.value = d.total;
-    tipoSel.value = d.tipo; document.getElementById('categoria').value = d.categoria;
-    document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-document.getElementById('registro-form').addEventListener('submit', async (e) => {
+// --- FIREBASE ---
+document.getElementById('registro-form').onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
     const data = {
         fecha: document.getElementById('fecha').value,
-        categoria: document.getElementById('categoria').value,
+        itemTipo: document.getElementById('item-tipo').value,
         tipo: document.getElementById('tipo').value,
+        proveedor: document.getElementById('proveedor').value,
         detalle: document.getElementById('detalle').value,
-        neto: Number(netoIn.value),
-        iva: Number(ivaIn.value),
-        total: Number(totalIn.value)
+        neto: Number(netoIn.value), iva: Number(ivaIn.value), total: Number(totalIn.value)
     };
     if(id) await updateDoc(doc(db, "registros", id), data);
     else await addDoc(colRef, data);
-    document.getElementById('registro-form').reset();
-    document.getElementById('edit-id').value = "";
-    document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
+    e.target.reset(); document.getElementById('edit-id').value = "";
+};
+
+onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
+    const tbody = document.getElementById('lista-datos');
+    tbody.innerHTML = '';
+    let v=0, g=0, i=0;
+    snap.forEach(s => {
+        const d = s.data();
+        const esV = d.tipo.includes("Venta");
+        if(esV) v += d.total; else g += d.total;
+        i += esV ? d.iva : -d.iva;
+        tbody.innerHTML += `<tr><td>${d.fecha}</td><td>${d.itemTipo}</td><td>${d.proveedor}<br><small>${d.detalle}</small></td><td>$${d.total.toLocaleString()}</td><td><button onclick="window.del('${s.id}')">🗑️</button></td></tr>`;
+    });
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString()}`;
+    document.getElementById('stat-gastos').innerText = `$${g.toLocaleString()}`;
+    document.getElementById('stat-iva').innerText = `$${i.toLocaleString()}`;
 });
 
-document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
-selectorMes.addEventListener('change', render);
-onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
-    datosGlobales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    render();
-});
+window.del = (id) => confirm("¿Borrar?") && deleteDoc(doc(db, "registros", id));
+actualizarUIConfig();
