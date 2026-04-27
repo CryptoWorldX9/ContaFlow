@@ -6,93 +6,92 @@
 <title>ContaFlow PRO</title>
 
 <link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
 
+</head>
 <body>
 
-<div class="app-shell">
+<div class="app">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
-    <div class="brand-box">
-        <div class="logo-icon">CF</div>
-        <div class="brand-text">ContaFlow<span>PRO</span></div>
-    </div>
+    <div class="logo">CF PRO</div>
 
-    <input type="month" id="filtro-periodo" class="month-picker">
+    <input type="month" id="periodo">
 
     <div class="stats">
-        <div class="stat"><span>Ventas</span><b id="stat-ventas">$0</b></div>
-        <div class="stat"><span>Caja</span><b id="stat-caja">$0</b></div>
-        <div class="stat"><span>IVA</span><b id="stat-iva">$0</b></div>
+        <div><span>Ventas</span><b id="ventas">$0</b></div>
+        <div><span>Compras</span><b id="compras">$0</b></div>
+        <div><span>IVA</span><b id="iva">$0</b></div>
     </div>
 
-    <button onclick="abrirConfig()" class="btn-config">⚙️</button>
+    <button class="config-btn" onclick="toggleConfig()">⚙</button>
 </aside>
 
 <!-- MAIN -->
 <main class="main">
 
-<!-- FORM -->
-<section class="card">
-<h3>Nuevo Registro</h3>
+<section class="card form">
+
+<h2>Nuevo Documento</h2>
 
 <form id="form">
 
-<input type="hidden" id="edit-id">
-
-<div class="grid2">
+<div class="row">
 <input type="date" id="fecha" required>
 
-<select id="categoria">
-<option value="negocio">Negocio</option>
-<option value="caja">Caja chica</option>
+<select id="tipoDoc">
+<option>Factura Venta</option>
+<option>Factura Compra</option>
+<option>Boleta</option>
+<option>Servicio</option>
 </select>
 </div>
 
-<select id="tipo">
-<option value="Factura Venta">Factura Venta</option>
-<option value="Factura Compra">Factura Compra</option>
-<option value="Boleta Venta">Boleta Venta</option>
-<option value="Servicio">Pago Servicio</option>
+<div class="row">
+<select id="tipoItem">
+<option value="compra">Compra</option>
+<option value="servicio">Servicio</option>
 </select>
+</div>
 
-<select id="subtipo">
-<option value="Compra">Compra</option>
-<option value="Servicio">Servicio</option>
-</select>
-
-<!-- proveedor opcional -->
-<div class="grid2 opcional">
-<input type="text" id="rut" placeholder="RUT proveedor (opcional)">
+<div class="row">
+<input type="text" id="rut" placeholder="RUT (opcional)">
 <input type="text" id="proveedor" placeholder="Proveedor (opcional)">
 </div>
 
-<!-- detalle avanzado -->
-<div id="detalle-lista"></div>
-<button type="button" onclick="agregarItem()">+ Agregar item</button>
+<!-- TABLA PRODUCTOS -->
+<table class="items">
+<thead>
+<tr>
+<th>Cant</th>
+<th>Descripción</th>
+<th>Precio</th>
+<th>Subtotal</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="itemsBody"></tbody>
+</table>
 
-<div class="money">
-<input type="number" id="neto" placeholder="Neto">
-<input type="number" id="iva" placeholder="IVA" readonly>
-<input type="number" id="total" placeholder="Total">
+<button type="button" class="add" onclick="addItem()">+ agregar</button>
+
+<div class="totales">
+<input id="neto" placeholder="Neto">
+<input id="ivaCalc" placeholder="IVA" readonly>
+<input id="total" placeholder="Total">
 </div>
 
-<button type="submit">Guardar</button>
+<button class="save">Guardar</button>
 
 </form>
 </section>
 
-<!-- CHART -->
 <section class="card">
 <canvas id="chart"></canvas>
 </section>
 
-<!-- TABLA -->
 <section class="card">
 <table>
 <thead>
@@ -104,7 +103,7 @@
 <th></th>
 </tr>
 </thead>
-<tbody id="lista"></tbody>
+<tbody id="tabla"></tbody>
 </table>
 </section>
 
@@ -112,22 +111,16 @@
 
 </div>
 
-<!-- MODAL CONFIG -->
-<div id="configModal" class="modal">
-<div class="modal-content">
+<!-- CONFIG -->
+<div class="config" id="config">
 <h3>Configuración</h3>
 
-<label>Tipos personalizados</label>
-<input id="nuevoTipo" placeholder="Ej: Arriendo">
-<button onclick="agregarTipo()">Agregar</button>
+<label>IVA (%)</label>
+<input id="configIva">
 
-<ul id="listaTipos"></ul>
-
-<button onclick="cerrarConfig()">Cerrar</button>
-</div>
+<button onclick="saveConfig()">Guardar</button>
 </div>
 
 <script type="module" src="script.js"></script>
-
 </body>
 </html>
