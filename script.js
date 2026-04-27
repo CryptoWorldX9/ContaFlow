@@ -1,186 +1,133 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
-    authDomain: "contaflow-22b0e.firebaseapp.com",
-    projectId: "contaflow-22b0e",
-    storageBucket: "contaflow-22b0e.firebasestorage.app",
-    messagingSenderId: "482658784469",
-    appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
-    measurementId: "G-CTWWH372DE"
-};
+const app = initializeApp({
+apiKey: "AIzaSy...",
+authDomain: "contaflow-22b0e.firebaseapp.com",
+projectId: "contaflow-22b0e"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const colRef = collection(db, "registros");
+const col = collection(db, "registros");
 
-let myChart = null;
-let datosGlobales = [];
+let datos = [];
+let tiposConfig = JSON.parse(localStorage.getItem("tipos")) || [];
 
-// --- INICIALIZAR MES ---
-const selectorMes = document.getElementById('filtro-periodo');
-const hoy = new Date();
-selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+const lista = document.getElementById("lista");
 
-// --- CALCULOS ---
-const netoIn = document.getElementById('neto');
-const ivaIn = document.getElementById('iva');
-const totalIn = document.getElementById('total');
-const tipoSel = document.getElementById('tipo');
+// FECHA HOY
+document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
 
-function calcular() {
-    const neto = parseFloat(netoIn.value) || 0;
-    const esFactura = tipoSel.value.includes("Factura");
-    const iva = esFactura ? Math.round(neto * 0.19) : 0;
-    ivaIn.value = iva;
-    totalIn.value = neto + iva;
-}
+// CALCULO
+const neto = document.getElementById("neto");
+const iva = document.getElementById("iva");
+const total = document.getElementById("total");
 
-function calcularInverso() {
-    const total = parseFloat(totalIn.value) || 0;
-    const esFactura = tipoSel.value.includes("Factura");
-    if (esFactura) {
-        const neto = Math.round(total / 1.19);
-        netoIn.value = neto;
-        ivaIn.value = total - neto;
-    } else {
-        netoIn.value = total;
-        ivaIn.value = 0;
-    }
-}
-
-netoIn.addEventListener('input', calcular);
-totalIn.addEventListener('input', calcularInverso);
-tipoSel.addEventListener('change', calcular);
-
-// --- RENDERIZADO ---
-function render() {
-    const periodoActivo = selectorMes.value;
-    const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
-    
-    const filtrados = datosGlobales.filter(d => 
-        d.fecha.startsWith(periodoActivo) && 
-        chipsActivos.includes(d.tipo)
-    );
-
-    const tbody = document.getElementById('lista-datos');
-    tbody.innerHTML = '';
-    
-    let ventas = 0, compras = 0, caja = 0, ivaV = 0, ivaC = 0;
-
-    filtrados.forEach(d => {
-        if(d.tipo.includes("Venta") || d.tipo.includes("Boleta")) {
-            ventas += d.total;
-            if(d.tipo.includes("Factura")) ivaV += d.iva;
-        } else if(d.tipo.includes("Compra")) {
-            compras += d.total;
-            ivaC += d.iva;
-        } else {
-            caja += d.total;
-        }
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${d.fecha.split('-').reverse().join('/')}</td>
-                <td><span style="color:var(--accent)">${d.tipo}</span></td>
-                <td>${d.detalle}</td>
-                <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
-                <td class="text-right">
-                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; margin-right:10px">✏️</button>
-                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer">🗑️</button>
-                </td>
-            </tr>`;
-    });
-
-    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
-    document.getElementById('stat-caja').innerText = `$${caja.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(ivaV - ivaC).toLocaleString('es-CL')}`;
-
-    actualizarGrafico(ventas, compras, caja);
-}
-
-function actualizarGrafico(v, co, ca) {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    if (myChart) myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Ventas', 'Compras', 'Caja Chica'],
-            datasets: [{
-                label: 'Pesos ($)',
-                data: [v, co, ca],
-                backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
-                borderRadius: 8,
-                barThickness: 50
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                x: { grid: { display: false }, ticks: { color: '#8b949e' } }
-            }
-        }
-    });
-}
-
-// --- BOTONES EXPORTAR ---
-window.exportarReporte = (tipo) => {
-    const periodo = selectorMes.value;
-    const paraExportar = datosGlobales.filter(d => d.fecha.startsWith(periodo));
-    if (tipo === 'excel') {
-        const ws = XLSX.utils.json_to_sheet(paraExportar);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Contabilidad");
-        XLSX.writeFile(wb, `Reporte_${periodo}.xlsx`);
-    } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`ContaFlow - Periodo ${periodo}`, 14, 20);
-        const rows = paraExportar.map(d => [d.fecha, d.tipo, d.detalle, d.total]);
-        doc.autoTable({ head: [['Fecha', 'Tipo', 'Detalle', 'Total']], body: rows, startY: 30 });
-        doc.save(`Reporte_${periodo}.pdf`);
-    }
+neto.oninput = () => {
+iva.value = Math.round(neto.value * 0.19);
+total.value = Number(neto.value) + Number(iva.value);
 };
 
-// Acciones Firebase
-document.getElementById('registro-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('edit-id').value;
-    const data = {
-        fecha: document.getElementById('fecha').value,
-        categoria: document.getElementById('categoria').value,
-        tipo: document.getElementById('tipo').value,
-        detalle: document.getElementById('detalle').value,
-        neto: Number(netoIn.value),
-        iva: Number(ivaIn.value),
-        total: Number(totalIn.value)
-    };
-    if(id) await updateDoc(doc(db, "registros", id), data);
-    else await addDoc(colRef, data);
-    document.getElementById('registro-form').reset();
-    document.getElementById('edit-id').value = "";
-    document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
-});
-
-window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
-window.prepararEdicion = (id) => {
-    const d = datosGlobales.find(i => i.id === id);
-    document.getElementById('edit-id').value = id;
-    document.getElementById('fecha').value = d.fecha;
-    document.getElementById('detalle').value = d.detalle;
-    netoIn.value = d.neto; ivaIn.value = d.iva; totalIn.value = d.total;
-    tipoSel.value = d.tipo; document.getElementById('categoria').value = d.categoria;
-    document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+total.oninput = () => {
+neto.value = Math.round(total.value / 1.19);
+iva.value = total.value - neto.value;
 };
 
-document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
-selectorMes.addEventListener('change', render);
-onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
-    datosGlobales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    render();
+// DETALLE LISTA
+function agregarItem(texto="") {
+const div = document.createElement("div");
+div.className="item";
+
+div.innerHTML = `
+<input placeholder="Producto / servicio" value="${texto}">
+<button onclick="this.parentElement.remove()">x</button>
+`;
+
+document.getElementById("detalle-lista").appendChild(div);
+}
+window.agregarItem = agregarItem;
+
+// GUARDAR
+document.getElementById("form").onsubmit = async e => {
+e.preventDefault();
+
+const items = [...document.querySelectorAll(".item input")].map(i=>i.value);
+
+const data = {
+fecha: fecha.value,
+tipo: tipo.value,
+subtipo: subtipo.value,
+rut: rut.value,
+proveedor: proveedor.value,
+items,
+neto: Number(neto.value),
+iva: Number(iva.value),
+total: Number(total.value)
+};
+
+await addDoc(col, data);
+e.target.reset();
+document.getElementById("detalle-lista").innerHTML="";
+agregarItem();
+};
+
+// LISTAR
+onSnapshot(col, snap=>{
+datos = snap.docs.map(d=>({id:d.id,...d.data()}));
+render();
 });
+
+function render(){
+lista.innerHTML="";
+
+let ventas=0, caja=0, ivaTotal=0;
+
+datos.forEach(d=>{
+
+if(d.tipo.includes("Venta")) ventas+=d.total;
+else caja+=d.total;
+
+ivaTotal += d.iva;
+
+lista.innerHTML += `
+<tr>
+<td>${d.fecha}</td>
+<td>${d.tipo}</td>
+<td>${d.proveedor || "-"}</td>
+<td>$${d.total}</td>
+<td>
+<button onclick="eliminar('${d.id}')">🗑</button>
+</td>
+</tr>
+`;
+});
+
+stat_ventas.innerText="$"+ventas;
+stat_caja.innerText="$"+caja;
+stat_iva.innerText="$"+ivaTotal;
+}
+
+window.eliminar = async id=>{
+await deleteDoc(doc(db,"registros",id));
+};
+
+// CONFIG
+window.abrirConfig = ()=> configModal.style.display="flex";
+window.cerrarConfig = ()=> configModal.style.display="none";
+
+window.agregarTipo = ()=>{
+const val = nuevoTipo.value;
+tiposConfig.push(val);
+localStorage.setItem("tipos", JSON.stringify(tiposConfig));
+renderTipos();
+};
+
+function renderTipos(){
+listaTipos.innerHTML="";
+tiposConfig.forEach(t=>{
+listaTipos.innerHTML+=`<li>${t}</li>`;
+});
+}
+
+renderTipos();
+agregarItem();
