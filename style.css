@@ -1,115 +1,118 @@
-:root {
-    --bg: #05070a;
-    --side-bg: #0d1117;
-    --card: #161b22;
-    --accent: #38bdf8;
-    --red: #f43f5e;
-    --border: #30363d;
-    --text: #f8fafc;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-body { background: var(--bg); color: var(--text); overflow-x: hidden; }
-
-.app-shell { display: flex; min-height: 100vh; }
-
-/* --- DISEÑO ESCRITORIO (TU VERSIÓN PREMIUM) --- */
-.sidebar {
-    width: 260px; background: var(--side-bg); border-right: 1px solid var(--border);
-    padding: 20px; display: flex; flex-direction: column; gap: 15px;
-    position: sticky; top: 0; height: 100vh;
-}
-
-.brand-box { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-.logo-icon { background: var(--accent); color: #000; width: 35px; height: 35px; border-radius: 8px; display: grid; place-items: center; font-weight: 800; }
-.brand-text { font-size: 1.1rem; font-weight: 800; }
-
-.period-selector { background: #1c2128; padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
-.period-selector label { font-size: 0.65rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 5px; }
-.month-picker { background: transparent; border: none; color: white; font-size: 0.9rem; width: 100%; color-scheme: dark; }
-
-.stat-card { padding: 12px; border-radius: 12px; border-left: 4px solid; background: #0d1117; margin-bottom: 8px; }
-.stat-card.blue { border-color: var(--accent); }
-.stat-card.red { border-color: var(--red); }
-.stat-card.purple { border-color: #a855f7; }
-.stat-card .label { font-size: 0.65rem; color: #8b949e; text-transform: uppercase; }
-.stat-card h2 { font-size: 1.2rem; margin-top: 2px; }
-
-.export-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; padding-top: 10px; }
-.btn-pro { padding: 12px 5px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: 0.2s; color: white; }
-.btn-pro.pdf { background: #3d444d; border: 1px solid #f43f5e; color: #f43f5e; }
-.btn-pro.excel { background: #3d444d; border: 1px solid #10b981; color: #10b981; }
-.btn-pro:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-.main-content { flex: 1; padding: 25px; }
-.dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
-.table-section { grid-column: span 2; }
-
-.glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
-.card-header h3 { font-size: 1rem; margin-bottom: 15px; color: var(--accent); }
-
-.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field { margin-bottom: 12px; }
-.field label { font-size: 0.75rem; color: #8b949e; margin-bottom: 4px; display: block; }
-input, select { width: 100%; padding: 10px; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 0.9rem; }
-
-.money-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-.total-hl input { color: var(--accent); font-weight: 800; }
-.btn-confirm { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-.chart-container { height: 220px; position: relative; }
-
-.table-header-pro { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.filter-chips { display: flex; gap: 8px; }
-.chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: white; cursor: pointer; font-size: 0.75rem; }
-.chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-.table-responsive { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 12px; color: #8b949e; font-size: 0.75rem; border-bottom: 1px solid var(--border); }
-td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-.text-right { text-align: right; }
-
-/* --- ADAPTACIÓN MÓVIL (TIPO APP) --- */
+/* --- ADAPTACIÓN MÓVIL (ESTILO APP PRO) --- */
 @media (max-width: 1024px) {
+    /* Ajuste de fuente base para que nada se vea pequeño */
+    html { font-size: 16px; } 
+
     .app-shell { flex-direction: column; }
     
     .sidebar {
-        width: 100%; height: auto; position: relative; padding: 15px;
-        border-right: none; border-bottom: 1px solid var(--border);
-        display: block; /* Para que los elementos fluyan */
+        width: 100% !important; /* Forzamos el ancho total */
+        height: auto; 
+        position: relative; 
+        padding: 20px 15px; 
+        border-right: none; 
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch; /* Estira los elementos al ancho total */
     }
 
-    .brand-box { margin-bottom: 15px; justify-content: center; }
+    .brand-box { margin-bottom: 20px; justify-content: center; }
+    .brand-text { font-size: 1.4rem; } /* Logo más grande */
 
+    /* Contenedor de Periodo al 100% */
+    .period-selector { 
+        width: 100%; 
+        margin-bottom: 20px; 
+        padding: 15px;
+    }
+    .month-picker { font-size: 1.1rem; height: 45px; } /* Input más grande para dedos */
+
+    /* Reporte Rápido: Carrusel Táctil */
     .nav-menu {
-        display: flex; overflow-x: auto; gap: 10px; 
-        padding-bottom: 5px; margin-top: 10px;
+        display: flex; 
+        overflow-x: auto; 
+        gap: 12px; 
+        padding: 5px 0 15px 0;
+        width: 100%;
         -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
     }
 
     .stat-card {
-        min-width: 140px; margin-bottom: 0; flex-shrink: 0;
-        padding: 10px;
+        min-width: 160px; /* Tarjetas más anchas */
+        margin-bottom: 0; 
+        flex-shrink: 0;
+        padding: 15px;
+        scroll-snap-align: start;
     }
 
-    .stat-card h2 { font-size: 1rem; }
+    .stat-card h2 { font-size: 1.4rem; } /* Números más grandes */
     .menu-label { display: none; }
 
-    .period-selector { margin-bottom: 10px; }
-
+    /* Botones de Exportar Grandes */
     .export-actions {
-        display: grid; grid-template-columns: 1fr 1fr;
-        margin-top: 15px; padding-top: 0;
+        display: grid; 
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 10px;
+        width: 100%;
     }
 
-    .main-content { padding: 15px; }
-    .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
-    .table-section { grid-column: span 1; }
+    .btn-pro { 
+        padding: 15px 5px; 
+        font-size: 0.9rem; 
+        height: 50px; 
+    }
+
+    /* Cuerpo Principal */
+    .main-content { padding: 15px; width: 100%; }
+    .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
     
-    .input-row { grid-template-columns: 1fr; }
-    .money-grid { grid-template-columns: 1fr; }
+    /* Formulario e Inputs Gigantes para Móvil */
+    .glass-card { padding: 20px 15px; border-radius: 15px; }
+    .card-header h3 { font-size: 1.2rem; }
+
+    .input-row { grid-template-columns: 1fr; gap: 15px; }
+    .field label { font-size: 0.9rem; margin-bottom: 8px; }
     
-    .table-header-pro { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .filter-chips { width: 100%; overflow-x: auto; padding-bottom: 5px; }
+    input, select { 
+        height: 50px; /* Altura cómoda para tocar */
+        font-size: 1rem !important; 
+        padding: 12px;
+    }
+    
+    .money-grid { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+        padding: 20px;
+    }
+
+    .btn-confirm { 
+        padding: 20px; 
+        font-size: 1.1rem; 
+        margin-top: 20px;
+    }
+
+    /* Tabla y Filtros */
+    .table-header-pro { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .filter-chips { 
+        width: 100%; 
+        overflow-x: auto; 
+        display: flex;
+        padding-bottom: 10px;
+    }
+    .chip { 
+        padding: 10px 18px; 
+        font-size: 0.85rem; 
+        white-space: nowrap;
+    }
+
+    td { font-size: 0.9rem; padding: 15px 8px; }
+    
+    /* Botones de acción en tabla (Editar/Borrar) */
+    .text-right button {
+        padding: 10px;
+        font-size: 1.3rem;
+    }
 }
