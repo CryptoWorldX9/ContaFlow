@@ -18,12 +18,10 @@ const colRef = collection(db, "registros");
 let myChart = null;
 let datosGlobales = [];
 
-// --- INICIALIZAR MES ---
 const selectorMes = document.getElementById('filtro-periodo');
 const hoy = new Date();
 selectorMes.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
 
-// --- CALCULOS ---
 const netoIn = document.getElementById('neto');
 const ivaIn = document.getElementById('iva');
 const totalIn = document.getElementById('total');
@@ -32,9 +30,8 @@ const tipoSel = document.getElementById('tipo');
 function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
     const esFactura = tipoSel.value.includes("Factura");
-    const iva = esFactura ? Math.round(neto * 0.19) : 0;
-    ivaIn.value = iva;
-    totalIn.value = neto + iva;
+    ivaIn.value = esFactura ? Math.round(neto * 0.19) : 0;
+    totalIn.value = neto + (parseFloat(ivaIn.value) || 0);
 }
 
 function calcularInverso() {
@@ -54,50 +51,38 @@ netoIn.addEventListener('input', calcular);
 totalIn.addEventListener('input', calcularInverso);
 tipoSel.addEventListener('change', calcular);
 
-// --- RENDERIZADO ---
 function render() {
     const periodoActivo = selectorMes.value;
     const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
-    
-    const filtrados = datosGlobales.filter(d => 
-        d.fecha.startsWith(periodoActivo) && 
-        chipsActivos.includes(d.tipo)
-    );
+    const filtrados = datosGlobales.filter(d => d.fecha.startsWith(periodoActivo) && chipsActivos.includes(d.tipo));
 
     const tbody = document.getElementById('lista-datos');
     tbody.innerHTML = '';
-    
-    let ventas = 0, compras = 0, caja = 0, ivaV = 0, ivaC = 0;
+    let v = 0, c = 0, ca = 0, iv = 0, ic = 0;
 
     filtrados.forEach(d => {
         if(d.tipo.includes("Venta") || d.tipo.includes("Boleta")) {
-            ventas += d.total;
-            if(d.tipo.includes("Factura")) ivaV += d.iva;
+            v += d.total; if(d.tipo.includes("Factura")) iv += d.iva;
         } else if(d.tipo.includes("Compra")) {
-            compras += d.total;
-            ivaC += d.iva;
-        } else {
-            caja += d.total;
-        }
+            c += d.total; ic += d.iva;
+        } else { ca += d.total; }
 
-        tbody.innerHTML += `
-            <tr>
-                <td>${d.fecha.split('-').reverse().join('/')}</td>
-                <td><span style="color:var(--accent)">${d.tipo}</span></td>
-                <td>${d.detalle}</td>
-                <td><strong>$${d.total.toLocaleString('es-CL')}</strong></td>
-                <td class="text-right">
-                    <button onclick="prepararEdicion('${d.id}')" style="background:none; border:none; cursor:pointer; margin-right:10px">✏️</button>
-                    <button onclick="eliminarRegistro('${d.id}')" style="background:none; border:none; cursor:pointer">🗑️</button>
-                </td>
-            </tr>`;
+        tbody.innerHTML += `<tr>
+            <td>${d.fecha.split('-').reverse().join('/')}</td>
+            <td><span style="color:var(--accent)">${d.tipo}</span></td>
+            <td>${d.detalle}</td>
+            <td><strong>$${d.total.toLocaleString()}</strong></td>
+            <td class="text-right">
+                <button onclick="prepararEdicion('${d.id}')">✏️</button>
+                <button onclick="eliminarRegistro('${d.id}')">🗑️</button>
+            </td>
+        </tr>`;
     });
 
-    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
-    document.getElementById('stat-caja').innerText = `$${caja.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(ivaV - ivaC).toLocaleString('es-CL')}`;
-
-    actualizarGrafico(ventas, compras, caja);
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString()}`;
+    document.getElementById('stat-caja').innerText = `$${ca.toLocaleString()}`;
+    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString()}`;
+    actualizarGrafico(v, c, ca);
 }
 
 function actualizarGrafico(v, co, ca) {
@@ -106,66 +91,14 @@ function actualizarGrafico(v, co, ca) {
     myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Ventas', 'Compras', 'Caja Chica'],
-            datasets: [{
-                label: 'Pesos ($)',
-                data: [v, co, ca],
-                backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'],
-                borderRadius: 8,
-                barThickness: 50
-            }]
+            labels: ['Ventas', 'Compras', 'Caja'],
+            datasets: [{ data: [v, co, ca], backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e'], borderRadius: 5 }]
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                x: { grid: { display: false }, ticks: { color: '#8b949e' } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
-// --- BOTONES EXPORTAR ---
-window.exportarReporte = (tipo) => {
-    const periodo = selectorMes.value;
-    const paraExportar = datosGlobales.filter(d => d.fecha.startsWith(periodo));
-    if (tipo === 'excel') {
-        const ws = XLSX.utils.json_to_sheet(paraExportar);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Contabilidad");
-        XLSX.writeFile(wb, `Reporte_${periodo}.xlsx`);
-    } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`ContaFlow - Periodo ${periodo}`, 14, 20);
-        const rows = paraExportar.map(d => [d.fecha, d.tipo, d.detalle, d.total]);
-        doc.autoTable({ head: [['Fecha', 'Tipo', 'Detalle', 'Total']], body: rows, startY: 30 });
-        doc.save(`Reporte_${periodo}.pdf`);
-    }
-};
-
-// Acciones Firebase
-document.getElementById('registro-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('edit-id').value;
-    const data = {
-        fecha: document.getElementById('fecha').value,
-        categoria: document.getElementById('categoria').value,
-        tipo: document.getElementById('tipo').value,
-        detalle: document.getElementById('detalle').value,
-        neto: Number(netoIn.value),
-        iva: Number(ivaIn.value),
-        total: Number(totalIn.value)
-    };
-    if(id) await updateDoc(doc(db, "registros", id), data);
-    else await addDoc(colRef, data);
-    document.getElementById('registro-form').reset();
-    document.getElementById('edit-id').value = "";
-    document.getElementById('btn-submit').innerText = "GUARDAR REGISTRO";
-});
-
+// Ventanas globales para botones
 window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
 window.prepararEdicion = (id) => {
     const d = datosGlobales.find(i => i.id === id);
@@ -178,8 +111,25 @@ window.prepararEdicion = (id) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
+document.getElementById('registro-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    const data = {
+        fecha: document.getElementById('fecha').value,
+        categoria: document.getElementById('categoria').value,
+        tipo: document.getElementById('tipo').value,
+        detalle: document.getElementById('detalle').value,
+        neto: Number(netoIn.value), iva: Number(ivaIn.value), total: Number(totalIn.value)
+    };
+    if(id) await updateDoc(doc(db, "registros", id), data);
+    else await addDoc(colRef, data);
+    document.getElementById('registro-form').reset();
+    document.getElementById('edit-id').value = "";
+});
+
 selectorMes.addEventListener('change', render);
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { c.classList.toggle('active'); render(); }));
+
 onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
     datosGlobales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     render();
