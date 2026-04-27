@@ -13,7 +13,7 @@ body { background: var(--bg); color: var(--text); overflow-x: hidden; }
 
 .app-shell { display: flex; min-height: 100vh; }
 
-/* SIDEBAR COMPACTA */
+/* --- DISEÑO ESCRITORIO (TU VERSIÓN PREMIUM) --- */
 .sidebar {
     width: 260px; background: var(--side-bg); border-right: 1px solid var(--border);
     padding: 20px; display: flex; flex-direction: column; gap: 15px;
@@ -35,17 +35,12 @@ body { background: var(--bg); color: var(--text); overflow-x: hidden; }
 .stat-card .label { font-size: 0.65rem; color: #8b949e; text-transform: uppercase; }
 .stat-card h2 { font-size: 1.2rem; margin-top: 2px; }
 
-/* BOTONES EXPORTAR REDISEÑADOS */
 .export-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; padding-top: 10px; }
-.btn-pro {
-    padding: 12px 5px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem;
-    cursor: pointer; transition: 0.2s; color: white;
-}
+.btn-pro { padding: 12px 5px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: 0.2s; color: white; }
 .btn-pro.pdf { background: #3d444d; border: 1px solid #f43f5e; color: #f43f5e; }
 .btn-pro.excel { background: #3d444d; border: 1px solid #10b981; color: #10b981; }
 .btn-pro:hover { transform: scale(1.05); filter: brightness(1.2); }
 
-/* MAIN CONTENT */
 .main-content { flex: 1; padding: 25px; }
 .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
 .table-section { grid-column: span 2; }
@@ -53,7 +48,6 @@ body { background: var(--bg); color: var(--text); overflow-x: hidden; }
 .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
 .card-header h3 { font-size: 1rem; margin-bottom: 15px; color: var(--accent); }
 
-/* FORMULARIO */
 .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .field { margin-bottom: 12px; }
 .field label { font-size: 0.75rem; color: #8b949e; margin-bottom: 4px; display: block; }
@@ -61,13 +55,10 @@ input, select { width: 100%; padding: 10px; background: #0d1117; border: 1px sol
 
 .money-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
 .total-hl input { color: var(--accent); font-weight: 800; }
-
 .btn-confirm { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-/* GRAFICO */
 .chart-container { height: 220px; position: relative; }
 
-/* TABLA */
 .table-header-pro { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .filter-chips { display: flex; gap: 8px; }
 .chip { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: white; cursor: pointer; font-size: 0.75rem; }
@@ -79,7 +70,46 @@ th { text-align: left; padding: 12px; color: #8b949e; font-size: 0.75rem; border
 td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
 .text-right { text-align: right; }
 
+/* --- ADAPTACIÓN MÓVIL (TIPO APP) --- */
 @media (max-width: 1024px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-    .sidebar { position: relative; height: auto; width: 100%; }
+    .app-shell { flex-direction: column; }
+    
+    .sidebar {
+        width: 100%; height: auto; position: relative; padding: 15px;
+        border-right: none; border-bottom: 1px solid var(--border);
+        display: block; /* Para que los elementos fluyan */
+    }
+
+    .brand-box { margin-bottom: 15px; justify-content: center; }
+
+    .nav-menu {
+        display: flex; overflow-x: auto; gap: 10px; 
+        padding-bottom: 5px; margin-top: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .stat-card {
+        min-width: 140px; margin-bottom: 0; flex-shrink: 0;
+        padding: 10px;
+    }
+
+    .stat-card h2 { font-size: 1rem; }
+    .menu-label { display: none; }
+
+    .period-selector { margin-bottom: 10px; }
+
+    .export-actions {
+        display: grid; grid-template-columns: 1fr 1fr;
+        margin-top: 15px; padding-top: 0;
+    }
+
+    .main-content { padding: 15px; }
+    .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
+    .table-section { grid-column: span 1; }
+    
+    .input-row { grid-template-columns: 1fr; }
+    .money-grid { grid-template-columns: 1fr; }
+    
+    .table-header-pro { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .filter-chips { width: 100%; overflow-x: auto; padding-bottom: 5px; }
 }
