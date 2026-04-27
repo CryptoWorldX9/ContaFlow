@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
@@ -15,112 +15,122 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const colRef = collection(db, "registros");
 
+let myChart = null;
+let datosGlobales = [];
+
+// --- CÁLCULOS AUTOMÁTICOS ---
 const netoIn = document.getElementById('neto');
 const tipoSel = document.getElementById('tipo');
-
-// Función para limpiar campos y cálculos
-function limpiarFormulario() {
-    document.getElementById('registro-form').reset();
-    document.getElementById('iva').value = "";
-    document.getElementById('total').value = "";
-}
-
-function actualizarCalculos() {
+function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
-    const tipo = tipoSel.value;
-    const iva = tipo.includes("Factura") ? Math.round(neto * 0.19) : 0;
+    const iva = tipoSel.value.includes("Factura") ? Math.round(neto * 0.19) : 0;
     document.getElementById('iva').value = iva;
     document.getElementById('total').value = neto + iva;
 }
+netoIn.addEventListener('input', calcular);
+tipoSel.addEventListener('change', calcular);
 
-netoIn.addEventListener('input', actualizarCalculos);
-tipoSel.addEventListener('change', actualizarCalculos);
+// --- GUARDAR O EDITAR ---
+document.getElementById('registro-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    const data = {
+        fecha: document.getElementById('fecha').value,
+        categoria: document.getElementById('categoria').value,
+        tipo: document.getElementById('tipo').value,
+        detalle: document.getElementById('detalle').value,
+        neto: Number(document.getElementById('neto').value),
+        iva: Number(document.getElementById('iva').value),
+        total: Number(document.getElementById('total').value)
+    };
 
-// Gráfico dinámico
-let myChart;
-function actualizarGrafico(datos) {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const ventas = datos.filter(d => d.tipo.includes("Venta")).reduce((a, b) => a + b.total, 0);
-    const compras = datos.filter(d => d.tipo.includes("Compra")).reduce((a, b) => a + b.total, 0);
-    const cajaChica = datos.filter(d => d.categoria === "cajachica").reduce((a, b) => a + b.total, 0);
+    try {
+        if (id) {
+            await updateDoc(doc(db, "registros", id), data);
+            document.getElementById('edit-id').value = "";
+            document.getElementById('btn-submit').innerText = "Guardar Registro";
+        } else {
+            await addDoc(colRef, data);
+        }
+        document.getElementById('registro-form').reset();
+    } catch (err) {
+        alert("Error de conexión: Revisa las Reglas en Firebase Console");
+    }
+});
 
+// --- ELIMINAR ---
+window.eliminarRegistro = async (id) => {
+    if(confirm("¿Seguro que quieres borrar este registro?")) {
+        await deleteDoc(doc(db, "registros", id));
+    }
+};
+
+// --- CARGAR PARA EDITAR ---
+window.prepararEdicion = (id) => {
+    const d = datosGlobales.find(item => item.id === id);
+    document.getElementById('edit-id').value = id;
+    document.getElementById('fecha').value = d.fecha;
+    document.getElementById('categoria').value = d.categoria;
+    document.getElementById('tipo').value = d.tipo;
+    document.getElementById('detalle').value = d.detalle;
+    document.getElementById('neto').value = d.neto;
+    calcular();
+    document.getElementById('btn-submit').innerText = "Actualizar Registro";
+    window.scrollTo(0,0);
+};
+
+// --- FILTROS ---
+document.getElementById('filtro-mes').addEventListener('change', (e) => renderizar(datosGlobales));
+window.resetFiltro = () => { document.getElementById('filtro-mes').value = ""; renderizar(datosGlobales); };
+
+// --- RENDERIZADO Y GRÁFICO ---
+function renderizar(datos) {
+    const filtro = document.getElementById('filtro-mes').value;
+    const filtrados = filtro ? datos.filter(d => d.fecha.startsWith(filtro)) : datos;
+    
+    const tbody = document.getElementById('lista-datos');
+    tbody.innerHTML = '';
+    
+    let v = 0, c = 0, cc = 0, iv = 0, ic = 0;
+
+    filtrados.forEach(d => {
+        if(d.tipo.includes("Venta")) { v += d.total; if(d.tipo.includes("Factura")) iv += d.iva; }
+        else if(d.tipo.includes("Compra")) { c += d.total; if(d.tipo.includes("Factura")) ic += d.iva; }
+        else { cc += d.total; }
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${d.fecha}</td>
+                <td>${d.tipo}</td>
+                <td>${d.detalle}</td>
+                <td>$${d.neto.toLocaleString()}</td>
+                <td>$${d.iva.toLocaleString()}</td>
+                <td>$${d.total.toLocaleString()}</td>
+                <td>
+                    <button onclick="prepararEdicion('${d.id}')" class="btn-edit">✏️</button>
+                    <button onclick="eliminarRegistro('${d.id}')" class="btn-del">🗑️</button>
+                </td>
+            </tr>`;
+    });
+
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString()}`;
+    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString()}`;
+
+    // Fix Gráfico loco
     if (myChart) myChart.destroy();
+    const ctx = document.getElementById('myChart');
     myChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Ventas', 'Compras', 'Caja Chica'],
-            datasets: [{
-                label: 'Monto en $',
-                data: [ventas, compras, cajaChica],
-                backgroundColor: ['#38bdf8', '#22c55e', '#ef4444']
-            }]
+            datasets: [{ data: [v, c, cc], backgroundColor: ['#38bdf8', '#22c55e', '#ef4444'] }]
         },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
     });
-
-    document.getElementById('stat-ventas').innerText = `$${ventas.toLocaleString('es-CL')}`;
-    const ivaVentas = datos.filter(d => d.tipo === "Factura Venta").reduce((a, b) => a + b.iva, 0);
-    const ivaCompras = datos.filter(d => d.tipo === "Factura Compra").reduce((a, b) => a + b.iva, 0);
-    document.getElementById('stat-iva').innerText = `$${(ivaVentas - ivaCompras).toLocaleString('es-CL')}`;
 }
 
-// GUARDAR DATOS Y LIMPIAR
-document.getElementById('registro-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        await addDoc(colRef, {
-            fecha: document.getElementById('fecha').value,
-            categoria: document.getElementById('categoria').value,
-            tipo: document.getElementById('tipo').value,
-            detalle: document.getElementById('detalle').value,
-            neto: Number(document.getElementById('neto').value),
-            iva: Number(document.getElementById('iva').value),
-            total: Number(document.getElementById('total').value),
-            timestamp: new Date()
-        });
-        
-        limpiarFormulario(); // <-- AQUÍ LIMPIAMOS TODO
-        alert("Registro guardado y formulario limpio.");
-    } catch (err) {
-        alert("Error al guardar: Revisa las Reglas de tu Database en Firebase.");
-    }
-});
-
-// ESCUCHAR DATOS (Esto hace que se vean en cualquier navegador automáticamente)
+// ESCUCHA EN TIEMPO REAL
 onSnapshot(query(colRef, orderBy("fecha", "desc")), (snapshot) => {
-    const list = [];
-    const tbody = document.getElementById('lista-datos');
-    tbody.innerHTML = '';
-    
-    if (snapshot.empty) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No hay datos grabados aún.</td></tr>';
-    }
-
-    snapshot.forEach(doc => {
-        const d = doc.data();
-        list.push(d);
-        tbody.innerHTML += `
-            <tr style="border-left: 4px solid ${d.categoria === 'negocio' ? '#38bdf8' : '#ef4444'}">
-                <td>${d.fecha}</td>
-                <td style="font-size: 0.8rem; color: #94a3b8">${d.categoria.toUpperCase()}</td>
-                <td>${d.tipo}</td>
-                <td>${d.detalle}</td>
-                <td>$${d.neto.toLocaleString('es-CL')}</td>
-                <td>$${d.iva.toLocaleString('es-CL')}</td>
-                <td>$${d.total.toLocaleString('es-CL')}</td>
-            </tr>`;
-    });
-    actualizarGrafico(list);
+    datosGlobales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderizar(datosGlobales);
 });
-
-window.generarPDF = function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("ContaFlow Pro - Reporte de Movimientos", 14, 15);
-    doc.autoTable({ html: '#tabla-registros', startY: 25 });
-    doc.save("Reporte_Contable_Pro.pdf");
-}
