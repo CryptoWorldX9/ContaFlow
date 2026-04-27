@@ -3,98 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro | Sistema Contable</title>
+    <title>ContaFlow Ultra | Business Suite</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="main-wrapper">
+    <div class="app-shell">
         <aside class="sidebar">
-            <div class="brand">ContaFlow <span>PRO</span></div>
-            <div class="quick-stats">
-                <div class="stat-box">
-                    <span>Ventas Mes</span>
+            <div class="brand-box">
+                <div class="logo-icon">CF</div>
+                <div class="brand-text">ContaFlow<span>Ultra</span></div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="menu-label">REPORTE RÁPIDO</div>
+                <div class="stat-card blue">
+                    <span class="label">Ventas Totales</span>
                     <h2 id="stat-ventas">$0</h2>
                 </div>
-                <div class="stat-box">
-                    <span>IVA Estimado</span>
+                <div class="stat-card purple">
+                    <span class="label">IVA por Pagar</span>
                     <h2 id="stat-iva">$0</h2>
                 </div>
             </div>
-            <div class="export-zone">
-                <button onclick="exportarReporte('pdf')" class="btn-pdf">Exportar PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-xls">Exportar Excel</button>
+
+            <div class="export-actions">
+                <button onclick="exportarReporte('pdf')" class="btn-action pdf">
+                    <i>📄</i> Exportar PDF
+                </button>
+                <button onclick="exportarReporte('excel')" class="btn-action excel">
+                    <i>📊</i> Exportar Excel
+                </button>
             </div>
         </aside>
 
         <main class="main-content">
-            <div class="dashboard">
-                <section class="card form-container">
-                    <h3>➕ Registro</h3>
+            <div class="dashboard-grid">
+                <section class="glass-card form-section">
+                    <div class="card-header">
+                        <span class="dot"></span>
+                        <h3>Nuevo Registro Contable</h3>
+                    </div>
                     <form id="registro-form">
                         <input type="hidden" id="edit-id">
-                        <div class="form-row">
+                        <div class="input-row">
                             <div class="field">
-                                <label>Fecha</label>
+                                <label>Fecha de Operación</label>
                                 <input type="date" id="fecha" required>
                             </div>
                             <div class="field">
                                 <label>Categoría</label>
                                 <select id="categoria" required>
                                     <option value="negocio">Libro Compra/Venta</option>
-                                    <option value="cajachica">Caja Chica</option>
+                                    <option value="cajachica">Gestión Caja Chica</option>
                                 </select>
                             </div>
                         </div>
                         <div class="field">
-                            <label>Tipo Documento</label>
+                            <label>Tipo de Documento</label>
                             <select id="tipo" required>
-                                <option value="Factura Venta">Factura Venta</option>
-                                <option value="Factura Compra">Factura Compra</option>
+                                <option value="Factura Venta">Factura Venta (Débito)</option>
+                                <option value="Factura Compra">Factura Compra (Crédito)</option>
                                 <option value="Boleta Venta">Boleta Venta</option>
                                 <option value="Gasto Caja Chica">Gasto Caja Chica</option>
                             </select>
                         </div>
                         <div class="field">
-                            <label>Detalle</label>
-                            <input type="text" id="detalle" placeholder="Ej: Repuestos L200" required>
+                            <label>Glosa o Detalle</label>
+                            <input type="text" id="detalle" placeholder="Ej: Servicio Técnico Motores" required>
                         </div>
-                        <div class="monto-grid">
-                            <input type="number" id="neto" placeholder="Neto" required>
-                            <input type="number" id="iva" placeholder="IVA" readonly>
-                            <input type="number" id="total" placeholder="Total" readonly>
+                        <div class="money-grid">
+                            <div class="money-field">
+                                <label>Neto</label>
+                                <input type="number" id="neto" placeholder="0">
+                            </div>
+                            <div class="money-field">
+                                <label>IVA</label>
+                                <input type="number" id="iva" readonly tabindex="-1">
+                            </div>
+                            <div class="money-field highlighted">
+                                <label>Total</label>
+                                <input type="number" id="total" placeholder="0">
+                            </div>
                         </div>
-                        <button type="submit" id="btn-submit" class="btn-main">GUARDAR DATOS</button>
+                        <button type="submit" id="btn-submit" class="btn-confirm">REGISTRAR MOVIMIENTO</button>
                     </form>
                 </section>
 
-                <section class="card chart-container">
-                    <h3>📊 Resumen</h3>
-                    <div class="chart-wrapper">
+                <section class="glass-card chart-section">
+                    <div class="card-header"><h3>Visualización de Flujos</h3></div>
+                    <div class="chart-container">
                         <canvas id="myChart"></canvas>
                     </div>
                 </section>
 
-                <section class="card table-container">
-                    <div class="table-header">
-                        <h3>Historial</h3>
-                        <div class="chips-container">
-                            <button class="chip active" data-val="Factura Venta">Ventas</button>
-                            <button class="chip active" data-val="Factura Compra">Compras</button>
-                            <button class="chip active" data-val="Gasto Caja Chica">Caja</button>
+                <section class="glass-card table-section">
+                    <div class="table-controls">
+                        <h3>Historial Maestro</h3>
+                        <div class="filter-group">
+                            <button class="filter-btn active" data-val="Factura Venta">Ventas</button>
+                            <button class="filter-btn active" data-val="Factura Compra">Compras</button>
+                            <button class="filter-btn active" data-val="Gasto Caja Chica">Caja</button>
                         </div>
                     </div>
-                    <div class="scrollable">
-                        <table id="tabla-registros">
+                    <div class="table-responsive">
+                        <table id="main-table">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Tipo</th>
+                                    <th>Documento</th>
+                                    <th>Detalle</th>
                                     <th>Total</th>
-                                    <th>Acciones</th>
+                                    <th class="text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="lista-datos"></tbody>
