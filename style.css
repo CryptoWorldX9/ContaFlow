@@ -1,60 +1,43 @@
 body{
 margin:0;
-font-family:'Plus Jakarta Sans';
-background:#0b0f14;
+font-family:Inter;
+background:#0f172a;
 color:white;
 }
 
-.app-shell{
+.app{
 display:flex;
 min-height:100vh;
 }
 
 /* sidebar */
 .sidebar{
-width:220px;
-background:#111827;
-padding:15px;
+width:240px;
+background:#020617;
+padding:20px;
 display:flex;
 flex-direction:column;
-gap:15px;
+gap:20px;
 }
 
-.logo-icon{
-background:#38bdf8;
-color:black;
-padding:10px;
-border-radius:8px;
-font-weight:bold;
+.logo{
+font-weight:800;
+font-size:20px;
 }
 
-.month-picker{
-padding:10px;
-background:#0b0f14;
-color:white;
-border:none;
-border-radius:8px;
-}
-
-.stats{
-display:flex;
-flex-direction:column;
-gap:10px;
-}
-
-.stat{
-background:#0b0f14;
+.stats div{
+background:#0f172a;
 padding:10px;
 border-radius:10px;
+margin-bottom:10px;
 }
 
-.btn-config{
+.config-btn{
 margin-top:auto;
 background:none;
 border:none;
 color:white;
 font-size:20px;
-cursor:pointer;
 }
 
 /* main */
@@ -67,46 +50,46 @@ gap:20px;
 
 /* cards */
 .card{
-background:#111827;
-padding:15px;
-border-radius:15px;
+background:#020617;
+padding:20px;
+border-radius:20px;
 }
 
 /* form */
-.grid2{
+.row{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
+margin-bottom:10px;
 }
 
-input, select{
+input,select{
 padding:12px;
 border-radius:10px;
 border:none;
-background:#0b0f14;
+background:#0f172a;
 color:white;
+}
+
+/* table items */
+.items input{
 width:100%;
 }
 
-.money{
+.add{
+margin:10px 0;
+background:#22c55e;
+}
+
+.totales{
 display:grid;
 grid-template-columns:1fr 1fr 1fr;
 gap:10px;
 }
 
-button{
-padding:12px;
-border:none;
-border-radius:10px;
-background:#38bdf8;
-cursor:pointer;
-}
-
-/* items */
-.item{
-display:flex;
-gap:5px;
-margin-bottom:5px;
+.save{
+background:#3b82f6;
+margin-top:10px;
 }
 
 /* table */
@@ -118,27 +101,29 @@ td,th{
 padding:10px;
 }
 
-/* modal */
-.modal{
-display:none;
+/* config */
+.config{
 position:fixed;
+right:0;
 top:0;
-left:0;
-width:100%;
+width:300px;
 height:100%;
-background:rgba(0,0,0,0.7);
-justify-content:center;
-align-items:center;
-}
-
-.modal-content{
-background:#111827;
+background:#020617;
 padding:20px;
-border-radius:15px;
+transform:translateX(100%);
+transition:.3s;
 }
 
-/* MOBILE APP STYLE */
+.config.show{
+transform:translateX(0);
+}
+
+/* MOBILE */
 @media(max-width:900px){
+
+.app{
+flex-direction:column;
+}
 
 .sidebar{
 width:100%;
@@ -150,12 +135,8 @@ overflow-x:auto;
 padding:10px;
 }
 
-.app-shell{
-flex-direction:column;
-}
-
-.card{
-border-radius:20px;
+.row{
+grid-template-columns:1fr;
 }
 
 }
