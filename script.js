@@ -18,17 +18,18 @@ const colRef = collection(db, "registros");
 let myChart = null;
 let datosGlobales = [];
 
-// --- LOGICA DE CHIPS (FILTROS) ---
-document.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        chip.classList.toggle('active');
-        actualizarApp();
+// --- FUNCIONALIDAD CHIPS ---
+document.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        render();
     });
 });
 
-// --- CALCULOS ---
+// --- CALCULOS AUTOMATICOS ---
 const netoIn = document.getElementById('neto');
 const tipoSel = document.getElementById('tipo');
+
 function calcular() {
     const neto = parseFloat(netoIn.value) || 0;
     const iva = tipoSel.value.includes("Factura") ? Math.round(neto * 0.19) : 0;
@@ -38,7 +39,7 @@ function calcular() {
 netoIn.addEventListener('input', calcular);
 tipoSel.addEventListener('change', calcular);
 
-// --- FIREBASE GUARDAR ---
+// --- GUARDAR / EDITAR ---
 document.getElementById('registro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
@@ -51,16 +52,17 @@ document.getElementById('registro-form').addEventListener('submit', async (e) =>
         iva: Number(document.getElementById('iva').value),
         total: Number(document.getElementById('total').value)
     };
-    if (id) await updateDoc(doc(db, "registros", id), data);
+
+    if(id) await updateDoc(doc(db, "registros", id), data);
     else await addDoc(colRef, data);
-    
+
     document.getElementById('registro-form').reset();
     document.getElementById('edit-id').value = "";
     document.getElementById('btn-submit').innerText = "GUARDAR DATOS";
 });
 
-// --- RENDERIZAR ---
-function actualizarApp() {
+// --- RENDERIZADO ---
+function render() {
     const chipsActivos = Array.from(document.querySelectorAll('.chip.active')).map(c => c.dataset.val);
     const filtrados = datosGlobales.filter(d => chipsActivos.includes(d.tipo));
 
@@ -76,22 +78,20 @@ function actualizarApp() {
 
         tbody.innerHTML += `
             <tr>
-                <td>${d.fecha}</td>
-                <td>${d.tipo}</td>
-                <td>${d.detalle}</td>
-                <td>$${d.total.toLocaleString('es-CL')}</td>
+                <td>${d.fecha.slice(5)}</td>
+                <td>${d.tipo.split(' ')[0]}</td>
+                <td>$${d.total.toLocaleString()}</td>
                 <td>
                     <div class="action-btns">
-                        <button onclick="prepararEdicion('${d.id}')" class="btn-edit">✏️</button>
-                        <button onclick="eliminarRegistro('${d.id}')" class="btn-del">🗑️</button>
+                        <button onclick="prepararEdicion('${d.id}')">✏️</button>
+                        <button onclick="eliminarRegistro('${d.id}')">🗑️</button>
                     </div>
                 </td>
             </tr>`;
     });
 
-    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString('es-CL')}`;
-    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString('es-CL')}`;
-
+    document.getElementById('stat-ventas').innerText = `$${v.toLocaleString()}`;
+    document.getElementById('stat-iva').innerText = `$${(iv - ic).toLocaleString()}`;
     actualizarGrafico(v, c, cc);
 }
 
@@ -101,30 +101,14 @@ function actualizarGrafico(v, c, cc) {
     myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Ventas', 'Compras', 'Caja Chica'],
-            datasets: [{
-                data: [v, c, cc],
-                backgroundColor: ['#38bdf8', '#22c55e', '#ef4444'],
-                borderRadius: 8
-            }]
+            labels: ['Ventas', 'Compras', 'Caja'],
+            datasets: [{ data: [v, c, cc], backgroundColor: ['#38bdf8', '#22c55e', '#ef4444'], borderRadius: 5 }]
         },
-        options: { 
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { ticks: { color: '#94a3b8' } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
-// --- EXPORT ---
-window.exportarReporte = (fmt) => {
-    const ws = XLSX.utils.json_to_sheet(datosGlobales);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Libro");
-    if(fmt==='excel') XLSX.writeFile(wb, "ContaFlow_Reporte.xlsx");
-    else alert("Exportando PDF..."); // Logica PDF igual a anterior
-}
-
+// --- ACCIONES ---
 window.eliminarRegistro = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "registros", id)); };
 window.prepararEdicion = (id) => {
     const d = datosGlobales.find(i => i.id === id);
@@ -134,11 +118,19 @@ window.prepararEdicion = (id) => {
     document.getElementById('neto').value = d.neto;
     document.getElementById('tipo').value = d.tipo;
     document.getElementById('categoria').value = d.categoria;
-    document.getElementById('btn-submit').innerText = "ACTUALIZAR REGISTRO";
+    document.getElementById('btn-submit').innerText = "ACTUALIZAR";
     window.scrollTo(0,0);
+};
+
+// --- EXPORTAR ---
+window.exportarReporte = (tipo) => {
+    const ws = XLSX.utils.json_to_sheet(datosGlobales);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contabilidad");
+    XLSX.writeFile(wb, "ContaFlow_Report.xlsx");
 };
 
 onSnapshot(query(colRef, orderBy("fecha", "desc")), (snap) => {
     datosGlobales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    actualizarApp();
+    render();
 });
