@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ContaFlow Pro v2</title>
+    <title>ContaFlow Pro | Sistema Integrado</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 1024px)">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -24,33 +24,30 @@
             
             <div class="nav-menu">
                 <div class="stat-card blue"><span class="label">Ventas</span><h2 id="stat-ventas">$0</h2></div>
-                <div class="stat-card red"><span class="label">Gastos/Compras</span><h2 id="stat-gastos">$0</h2></div>
+                <div class="stat-card red"><span class="label">Gastos</span><h2 id="stat-gastos">$0</h2></div>
                 <div class="stat-card purple"><span class="label">IVA Neto</span><h2 id="stat-iva">$0</h2></div>
             </div>
 
             <div class="export-actions">
-                <button onclick="exportarReporte('pdf')" class="btn-pro pdf">📄 PDF</button>
-                <button onclick="exportarReporte('excel')" class="btn-pro excel">📊 EXCEL</button>
+                <button class="btn-settings" onclick="toggleConfig()">⚙️ Ajustes</button>
             </div>
-
-            <button class="btn-settings" onclick="toggleConfig()">⚙️ Configuración</button>
         </aside>
 
         <main class="main-content">
             <section class="glass-card form-section">
-                <div class="card-header"><h3>Registro de Movimiento</h3></div>
+                <div class="card-header"><h3>Registro Contable</h3></div>
                 <form id="registro-form">
                     <input type="hidden" id="edit-id">
                     
                     <div class="input-row">
                         <div class="field"><label>Fecha</label><input type="date" id="fecha" required></div>
                         <div class="field">
-                            <label>Tipo de Ítem</label>
+                            <label>Clasificación</label>
                             <select id="item-tipo">
-                                <option value="Mercadería">📦 Compra Mercadería</option>
-                                <option value="Servicio">⚡ Pago de Servicio</option>
-                                <option value="Venta">💰 Venta Producto/Servicio</option>
-                                <option value="Insumo">🛠️ Insumos Taller</option>
+                                <option value="Mercadería">📦 Mercadería</option>
+                                <option value="Servicio">⚡ Servicio (Luz/Sii/Tel)</option>
+                                <option value="Venta">💰 Venta</option>
+                                <option value="Insumos">🛠️ Insumos Taller</option>
                             </select>
                         </div>
                     </div>
@@ -66,14 +63,14 @@
                             </select>
                         </div>
                         <div class="field">
-                            <label>Proveedor/Cliente (Opcional)</label>
-                            <input type="text" id="proveedor" placeholder="Nombre o RUT">
+                            <label>RUT / Proveedor (Opcional)</label>
+                            <input type="text" id="proveedor" placeholder="Ej: 76.xxx.xxx-k">
                         </div>
                     </div>
 
                     <div class="field">
-                        <label>Descripción / Listado de Productos</label>
-                        <textarea id="detalle" rows="3" placeholder="Ej:&#10;- Motosierra MS 250&#10;- Aceite 2T 1L&#10;- Cadena 3/8" required></textarea>
+                        <label>Detalle / Listado de Productos</label>
+                        <textarea id="detalle" rows="3" placeholder="Ingresa los productos aquí..." required></textarea>
                     </div>
 
                     <div class="money-grid">
@@ -81,8 +78,14 @@
                         <div class="money-field"><label>IVA</label><input type="number" id="iva" readonly></div>
                         <div class="money-field total-hl"><label>Total</label><input type="number" id="total"></div>
                     </div>
-                    <button type="submit" id="btn-submit" class="btn-confirm">GUARDAR EN REGISTRO</button>
+                    <button type="submit" id="btn-submit" class="btn-confirm">GUARDAR REGISTRO</button>
                 </form>
+            </section>
+
+            <section class="glass-card chart-section">
+                <div class="chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
             </section>
 
             <section class="glass-card table-section">
@@ -91,17 +94,18 @@
                     <div class="filter-chips">
                         <button class="chip active" data-val="Venta">Ventas</button>
                         <button class="chip active" data-val="Compra">Compras</button>
+                        <button class="chip active" data-val="Caja">Caja</button>
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table id="tabla-maestra">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Fecha</th>
-                                <th>Ítem/Tipo</th>
+                                <th>Ítem</th>
                                 <th>Detalle</th>
                                 <th>Total</th>
-                                <th>Acción</th>
+                                <th class="text-right">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="lista-datos"></tbody>
@@ -111,34 +115,22 @@
         </main>
     </div>
 
-    <div id="modal-config" class="modal">
+    <div id="modal-config" class="modal" style="display:none;">
         <div class="modal-content glass-card">
-            <div class="card-header">
-                <h3>⚙️ Configuración del Sistema</h3>
-                <button onclick="toggleConfig()" class="btn-close">×</button>
+            <h3>⚙️ Configuración</h3>
+            <div class="field">
+                <label>Tasa de IVA actual (%)</label>
+                <input type="number" id="config-iva" value="19">
             </div>
-            <div class="config-grid">
-                <div class="config-item">
-                    <label>Gestionar Tipos de Ítems</label>
-                    <div class="tag-manager">
-                        <input type="text" id="new-tag" placeholder="Nuevo ítem...">
-                        <button onclick="addTag()">Añadir</button>
-                    </div>
-                    <ul id="tag-list"></ul>
-                </div>
-                <div class="config-item">
-                    <label>Porcentaje de Impuesto (%)</label>
-                    <input type="number" id="config-iva" value="19">
-                </div>
-            </div>
+            <button onclick="toggleConfig()" class="btn-confirm">Cerrar</button>
         </div>
     </div>
 
     <script type="module" src="script.js"></script>
     <script>
         function toggleConfig() {
-            const modal = document.getElementById('modal-config');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            const m = document.getElementById('modal-config');
+            m.style.display = m.style.display === 'none' ? 'flex' : 'none';
         }
     </script>
 </body>
