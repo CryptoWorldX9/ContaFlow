@@ -66,28 +66,41 @@
         .chart-container { padding: 20px; height: 260px; }
         .fullwidth { grid-column: span 2; }
         .table-wrapper { overflow-x: auto; padding: 0 4px 20px 4px; }
-        /* MEJORA: Tabla con ancho fijo para pantallas 13" */
+        
+        /* ========== MEJORA TABLA PARA PANTALLAS 13" ========== */
         .data-table {
             width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
+            font-size: 0.75rem;
         }
         .data-table th, .data-table td {
-            padding: 10px 8px;
+            padding: 10px 6px;
             word-break: break-word;
             vertical-align: middle;
+            line-height: 1.3;
         }
-        /* Distribución de columnas en escritorio */
-        .data-table th:nth-child(1) { width: 9%; }  /* Fecha */
-        .data-table th:nth-child(2) { width: 12%; } /* Tipo */
-        .data-table th:nth-child(3) { width: 12%; } /* Proveedor */
-        .data-table th:nth-child(4) { width: 9%; }  /* RUT */
-        .data-table th:nth-child(5) { width: 15%; } /* Folio */
-        .data-table th:nth-child(6) { width: 20%; } /* Detalle Items */
+        /* Distribución profesional de columnas (anchos en %) */
+        .data-table th:nth-child(1) { width: 8%; }  /* Fecha */
+        .data-table th:nth-child(2) { width: 11%; } /* Tipo */
+        .data-table th:nth-child(3) { width: 13%; } /* Proveedor */
+        .data-table th:nth-child(4) { width: 10%; } /* RUT */
+        .data-table th:nth-child(5) { width: 8%; }  /* Folio */
+        .data-table th:nth-child(6) { width: 22%; } /* Detalle Items (se puede recortar) */
         .data-table th:nth-child(7) { width: 8%; }  /* Neto */
         .data-table th:nth-child(8) { width: 8%; }  /* IVA */
         .data-table th:nth-child(9) { width: 8%; }  /* Total */
-        .data-table th:nth-child(10) { width: 7%; } /* Acciones */
+        .data-table th:nth-child(10) { width: 6%; } /* Acciones */
+        
+        /* Para que el texto de detalles no se desborde */
+        .data-table td:nth-child(6) {
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
         
         .badge-tipo { background: #eef2ff; padding: 4px 8px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #1e40af; display: inline-block; white-space: nowrap; }
         .actions-icons i { margin: 0 4px; cursor: pointer; color: #94a3b8; font-size: 1rem; }
@@ -105,9 +118,14 @@
         .add-config { display: flex; gap: 8px; margin-top: 16px; }
         .add-config input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
 
-        /* Responsive manteniendo la tabla legible */
+        /* Ajuste fino para escritorio de 13" */
+        @media (min-width: 1200px) and (max-width: 1400px) {
+            .data-table th, .data-table td { padding: 8px 4px; font-size: 0.7rem; }
+            .data-table th:nth-child(6) { width: 20%; }
+            .badge-tipo { white-space: normal; word-break: break-word; }
+        }
         @media (max-width: 1200px) {
-            .data-table th, .data-table td { font-size: 0.7rem; padding: 8px 5px; }
+            .data-table th, .data-table td { font-size: 0.7rem; padding: 8px 4px; }
         }
         @media (max-width: 1024px) {
             .app-container { flex-direction: column; }
@@ -171,13 +189,12 @@
                         <div class="input-group"><label>Fecha</label><input type="date" id="fecha" class="input" required></div>
                         <div class="input-group"><label>Categoría</label><select id="categoria" class="input" required><option value="negocio">Libro Compra/Venta</option><option value="cajachica">Caja Chica</option></select></div>
                         <div class="input-group"><label>Tipo Documento</label><select id="tipo" class="input" required></select></div>
-                        <div class="input-group"><label>Subcategoría</label><select id="subcategoria" class="input"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio (Internet, Teléfono, Luz)</option></select></div>
+                        <div class="input-group"><label>Subcategoría</label><select id="subcategoria" class="input"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio</option></select></div>
                     </div>
-                    <!-- Campos: Nombre, RUT y FOLIO (nuevo) -->
                     <div class="proveedor-row">
-                        <div class="input-group"><label>Proveedor / Cliente (Nombre)</label><input type="text" id="proveedor-nombre" class="input" placeholder="Nombre o Razón Social (opcional)"></div>
-                        <div class="input-group"><label>RUT / DNI</label><input type="text" id="proveedor-rut" class="input" placeholder="RUT (opcional)"></div>
-                        <div class="input-group"><label>Folio</label><input type="text" id="folio" class="input" placeholder="Nº Folio (opcional)"></div>
+                        <div class="input-group"><label>Proveedor / Cliente (Nombre)</label><input type="text" id="proveedor-nombre" class="input" placeholder="Nombre o Razón Social"></div>
+                        <div class="input-group"><label>RUT / DNI</label><input type="text" id="proveedor-rut" class="input" placeholder="RUT"></div>
+                        <div class="input-group"><label>Folio</label><input type="text" id="folio" class="input" placeholder="Nº Folio"></div>
                     </div>
                     <div class="items-container">
                         <label style="font-weight:700; font-size:0.7rem;">📦 Items / Conceptos</label>
@@ -260,7 +277,6 @@
     let chart = null;
     let itemsArray = [{ nombre: "", cantidad: 1 }];
     
-    // Configuración dinámica
     let tiposDocumento = ["Factura Venta", "Factura Compra", "Boleta Venta", "Gasto Caja Chica", "Factura Servicio"];
     let subcategorias = ["producto", "servicio"];
     
@@ -301,7 +317,6 @@
     actualizarSelectTipos();
     actualizarSubcategorias();
     
-    // Elementos DOM
     const periodoInput = document.getElementById('periodo');
     const fechaInput = document.getElementById('fecha');
     const proveedorNombre = document.getElementById('proveedor-nombre');
@@ -319,7 +334,6 @@
     fechaInput.valueAsDate = hoy;
     periodoInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
     
-    // Items (solo nombre y cantidad)
     function renderItems() {
         const container = document.getElementById('items-list');
         if (!container) return;
@@ -375,7 +389,6 @@
         renderItems();
     });
     
-    // Guardar
     async function guardar(e) {
         e.preventDefault();
         const id = editIdInput.value;
@@ -426,7 +439,6 @@
     }
     form.addEventListener('submit', guardar);
     
-    // Editar y eliminar globales
     window.editarRegistro = (id) => {
         const reg = allData.find(r => r.id === id);
         if (!reg) return;
@@ -457,7 +469,6 @@
         }
     };
     
-    // Filtros y renderizado
     function obtenerFiltrosActivos() {
         return Array.from(document.querySelectorAll('.chip.active')).map(c => c.getAttribute('data-filter'));
     }
@@ -483,13 +494,12 @@
         tbody.innerHTML = '';
         filtrados.forEach(reg => {
             const itemsText = reg.items ? reg.items.map(i => `${i.cantidad}x ${i.nombre}`).join(", ") : (reg.detalle || "");
-            const folioMostrar = reg.folio || '';
             const row = tbody.insertRow();
             row.insertCell(0).innerHTML = reg.fecha.split('-').reverse().join('/');
             row.insertCell(1).innerHTML = `<span class="badge-tipo">${reg.tipo}</span>`;
             row.insertCell(2).innerHTML = reg.proveedor || '-';
             row.insertCell(3).innerHTML = reg.proveedorRut || '-';
-            row.insertCell(4).innerHTML = folioMostrar || '-';
+            row.insertCell(4).innerHTML = reg.folio || '-';
             row.insertCell(5).innerHTML = itemsText.length > 35 ? itemsText.substring(0,35)+"…" : itemsText;
             row.insertCell(6).innerHTML = `$${Number(reg.neto).toLocaleString('es-CL')}`;
             row.insertCell(7).innerHTML = `$${Number(reg.iva).toLocaleString('es-CL')}`;
@@ -498,7 +508,6 @@
             row.cells[9].innerHTML = `<i class="fas fa-edit" onclick="editarRegistro('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
         });
         
-        // Gráfico
         let ventasChart = 0, comprasChart = 0, cajaChart = 0;
         filtrados.forEach(d => {
             if (d.tipo.includes("Venta")) ventasChart += d.total;
@@ -522,7 +531,6 @@
         });
     }
     
-    // Exportar
     window.exportarPDF = () => {
         const periodo = periodoInput.value;
         const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
@@ -549,7 +557,6 @@
     document.getElementById('btn-export-pdf').addEventListener('click', () => window.exportarPDF());
     document.getElementById('btn-export-excel').addEventListener('click', () => window.exportarExcel());
     
-    // Configuración modal
     const modal = document.getElementById('modal-config');
     const abrirConfig = () => { renderizarConfigModal(); modal.style.display = 'flex'; };
     const cerrarConfig = () => modal.style.display = 'none';
@@ -610,7 +617,6 @@
     document.getElementById('btn-add-tipo').addEventListener('click', () => window.agregarTipo());
     document.getElementById('btn-add-subcat').addEventListener('click', () => window.agregarSubcat());
     
-    // Filtros y listener de período
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
             chip.classList.toggle('active');
@@ -619,7 +625,6 @@
     });
     periodoInput.addEventListener('change', () => renderDashboard());
     
-    // Firebase snapshot
     onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
         allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderDashboard();
