@@ -54,7 +54,7 @@
         .input-group label { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .input { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 14px; font-size: 0.9rem; background: white; }
         .input:focus { border-color: #3b82f6; outline: none; }
-        .proveedor-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .proveedor-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .items-container { background: #f8fafc; border-radius: 18px; padding: 16px; margin: 16px 0; }
         .item-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
         .item-row input { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
@@ -66,10 +66,30 @@
         .chart-container { padding: 20px; height: 260px; }
         .fullwidth { grid-column: span 2; }
         .table-wrapper { overflow-x: auto; padding: 0 4px 20px 4px; }
-        .data-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .data-table th { text-align: left; padding: 14px 12px; background: #f8fafc; font-size: 0.7rem; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; }
-        .data-table td { padding: 12px; border-bottom: 1px solid #f0f2f5; font-size: 0.8rem; }
-        .badge-tipo { background: #eef2ff; padding: 4px 10px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #1e40af; display: inline-block; }
+        /* MEJORA: Tabla con ancho fijo para pantallas 13" */
+        .data-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 10px 8px;
+            word-break: break-word;
+            vertical-align: middle;
+        }
+        /* Distribución de columnas en escritorio */
+        .data-table th:nth-child(1) { width: 9%; }  /* Fecha */
+        .data-table th:nth-child(2) { width: 12%; } /* Tipo */
+        .data-table th:nth-child(3) { width: 12%; } /* Proveedor */
+        .data-table th:nth-child(4) { width: 9%; }  /* RUT */
+        .data-table th:nth-child(5) { width: 15%; } /* Folio */
+        .data-table th:nth-child(6) { width: 20%; } /* Detalle Items */
+        .data-table th:nth-child(7) { width: 8%; }  /* Neto */
+        .data-table th:nth-child(8) { width: 8%; }  /* IVA */
+        .data-table th:nth-child(9) { width: 8%; }  /* Total */
+        .data-table th:nth-child(10) { width: 7%; } /* Acciones */
+        
+        .badge-tipo { background: #eef2ff; padding: 4px 8px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #1e40af; display: inline-block; white-space: nowrap; }
         .actions-icons i { margin: 0 4px; cursor: pointer; color: #94a3b8; font-size: 1rem; }
         .actions-icons i:hover { color: #3b82f6; }
         .filter-bar { display: flex; gap: 8px; margin: 16px 20px; flex-wrap: wrap; }
@@ -85,6 +105,10 @@
         .add-config { display: flex; gap: 8px; margin-top: 16px; }
         .add-config input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
 
+        /* Responsive manteniendo la tabla legible */
+        @media (max-width: 1200px) {
+            .data-table th, .data-table td { font-size: 0.7rem; padding: 8px 5px; }
+        }
         @media (max-width: 1024px) {
             .app-container { flex-direction: column; }
             .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding-bottom: 12px; }
@@ -101,6 +125,7 @@
             .form-grid { grid-template-columns: 1fr; }
             .money-row { grid-template-columns: 1fr; }
             .proveedor-row { grid-template-columns: 1fr; gap: 8px; }
+            .data-table { table-layout: auto; min-width: 700px; }
         }
         @media (max-width: 480px) {
             .kpi-card { min-width: 120px; }
@@ -148,10 +173,11 @@
                         <div class="input-group"><label>Tipo Documento</label><select id="tipo" class="input" required></select></div>
                         <div class="input-group"><label>Subcategoría</label><select id="subcategoria" class="input"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio (Internet, Teléfono, Luz)</option></select></div>
                     </div>
-                    <!-- Campos de proveedor separados: Nombre y RUT -->
+                    <!-- Campos: Nombre, RUT y FOLIO (nuevo) -->
                     <div class="proveedor-row">
                         <div class="input-group"><label>Proveedor / Cliente (Nombre)</label><input type="text" id="proveedor-nombre" class="input" placeholder="Nombre o Razón Social (opcional)"></div>
                         <div class="input-group"><label>RUT / DNI</label><input type="text" id="proveedor-rut" class="input" placeholder="RUT (opcional)"></div>
+                        <div class="input-group"><label>Folio</label><input type="text" id="folio" class="input" placeholder="Nº Folio (opcional)"></div>
                     </div>
                     <div class="items-container">
                         <label style="font-weight:700; font-size:0.7rem;">📦 Items / Conceptos</label>
@@ -180,7 +206,9 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
-                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>RUT</th><th>Detalle Items</th><th>Neto</th><th>IVA</th><th>Total</th><th>Acciones</th></tr></thead>
+                        <thead>
+                            <tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>RUT</th><th>Folio</th><th>Detalle Items</th><th>Neto</th><th>IVA</th><th>Total</th><th>Acciones</th>
+                        </thead>
                         <tbody id="tabla-body"></tbody>
                     </table>
                 </div>
@@ -216,7 +244,6 @@
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "firebase/firestore";
     
-    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
         authDomain: "contaflow-22b0e.firebaseapp.com",
@@ -231,7 +258,7 @@
     const registrosRef = collection(db, "registros");
     let allData = [];
     let chart = null;
-    let itemsArray = [{ nombre: "", cantidad: 1 }];  // Solo nombre y cantidad, sin precio
+    let itemsArray = [{ nombre: "", cantidad: 1 }];
     
     // Configuración dinámica
     let tiposDocumento = ["Factura Venta", "Factura Compra", "Boleta Venta", "Gasto Caja Chica", "Factura Servicio"];
@@ -241,7 +268,6 @@
         localStorage.setItem("tiposDoc", JSON.stringify(tiposDocumento));
         localStorage.setItem("subcats", JSON.stringify(subcategorias));
     }
-    
     function cargarConfig() {
         const t = localStorage.getItem("tiposDoc");
         if (t) tiposDocumento = JSON.parse(t);
@@ -261,7 +287,6 @@
             select.appendChild(opt);
         });
     }
-    
     function actualizarSubcategorias() {
         const select = document.getElementById('subcategoria');
         if (!select) return;
@@ -273,15 +298,15 @@
             select.appendChild(opt);
         });
     }
-    
     actualizarSelectTipos();
     actualizarSubcategorias();
     
-    // Elementos del DOM
+    // Elementos DOM
     const periodoInput = document.getElementById('periodo');
     const fechaInput = document.getElementById('fecha');
     const proveedorNombre = document.getElementById('proveedor-nombre');
     const proveedorRut = document.getElementById('proveedor-rut');
+    const folioInput = document.getElementById('folio');
     const netoInput = document.getElementById('neto');
     const ivaInput = document.getElementById('iva');
     const totalInput = document.getElementById('total');
@@ -290,12 +315,11 @@
     const form = document.getElementById('form-registro');
     const tipoSelect = document.getElementById('tipo');
     
-    // Fecha actual
     const hoy = new Date();
     fechaInput.valueAsDate = hoy;
     periodoInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
     
-    // Items: solo nombre y cantidad. El neto total se ingresa manualmente.
+    // Items (solo nombre y cantidad)
     function renderItems() {
         const container = document.getElementById('items-list');
         if (!container) return;
@@ -310,8 +334,6 @@
             `;
             container.appendChild(div);
         });
-        
-        // Eventos
         document.querySelectorAll('.item-nombre').forEach(inp => inp.addEventListener('change', (e) => {
             itemsArray[parseInt(e.target.dataset.idx)].nombre = e.target.value;
         }));
@@ -326,7 +348,6 @@
         }));
     }
     
-    // Calcular IVA y Total en base al Neto manual
     function recalcularIvaYTotal() {
         const neto = parseFloat(netoInput.value) || 0;
         const esFactura = tipoSelect.value.includes("Factura");
@@ -334,7 +355,6 @@
         ivaInput.value = iva;
         totalInput.value = neto + iva;
     }
-    
     function calcularDesdeTotal() {
         const total = parseFloat(totalInput.value) || 0;
         const esFactura = tipoSelect.value.includes("Factura");
@@ -347,33 +367,28 @@
             ivaInput.value = 0;
         }
     }
-    
     netoInput.addEventListener('input', recalcularIvaYTotal);
     totalInput.addEventListener('input', calcularDesdeTotal);
     tipoSelect.addEventListener('change', recalcularIvaYTotal);
-    
     document.getElementById('btn-add-item').addEventListener('click', () => {
         itemsArray.push({ nombre: "", cantidad: 1 });
         renderItems();
     });
     
-    // Guardar registro
+    // Guardar
     async function guardar(e) {
         e.preventDefault();
         const id = editIdInput.value;
         const itemsValidos = itemsArray.filter(i => i.nombre.trim() !== "");
         const descripcionItems = itemsValidos.map(i => `${i.cantidad}x ${i.nombre}`).join(", ");
-        // Construir proveedor combinado para mostrar en tabla (opcional)
-        const proveedorCompleto = proveedorNombre.value.trim() ? proveedorNombre.value.trim() : "";
-        const rutCompleto = proveedorRut.value.trim() ? proveedorRut.value.trim() : "";
-        
         const data = {
             fecha: fechaInput.value,
             categoria: document.getElementById('categoria').value,
             tipo: tipoSelect.value,
             subcategoria: document.getElementById('subcategoria').value,
-            proveedor: proveedorCompleto,
-            proveedorRut: rutCompleto,
+            proveedor: proveedorNombre.value.trim(),
+            proveedorRut: proveedorRut.value.trim(),
+            folio: folioInput.value.trim(),
             detalle: descripcionItems || "Sin detalle",
             items: itemsValidos,
             neto: Number(netoInput.value) || 0,
@@ -400,6 +415,7 @@
         fechaInput.valueAsDate = new Date();
         proveedorNombre.value = "";
         proveedorRut.value = "";
+        folioInput.value = "";
         itemsArray = [{ nombre: "", cantidad: 1 }];
         renderItems();
         netoInput.value = "0";
@@ -408,10 +424,9 @@
         document.getElementById('subcategoria').value = "producto";
         document.getElementById('categoria').value = "negocio";
     }
-    
     form.addEventListener('submit', guardar);
     
-    // Funciones globales para editar/eliminar
+    // Editar y eliminar globales
     window.editarRegistro = (id) => {
         const reg = allData.find(r => r.id === id);
         if (!reg) return;
@@ -419,6 +434,7 @@
         fechaInput.value = reg.fecha;
         proveedorNombre.value = reg.proveedor || "";
         proveedorRut.value = reg.proveedorRut || "";
+        folioInput.value = reg.folio || "";
         tipoSelect.value = reg.tipo;
         document.getElementById('categoria').value = reg.categoria;
         document.getElementById('subcategoria').value = reg.subcategoria || "producto";
@@ -434,7 +450,6 @@
         btnSubmit.innerHTML = '<i class="fas fa-pen"></i> ACTUALIZAR REGISTRO';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    
     window.eliminarRegistro = async (id) => {
         if (confirm("¿Eliminar este movimiento?")) {
             await deleteDoc(doc(db, "registros", id));
@@ -442,7 +457,7 @@
         }
     };
     
-    // Filtros y renderizado del dashboard
+    // Filtros y renderizado
     function obtenerFiltrosActivos() {
         return Array.from(document.querySelectorAll('.chip.active')).map(c => c.getAttribute('data-filter'));
     }
@@ -464,24 +479,23 @@
         document.getElementById('kpi-caja').innerHTML = `$${caja.toLocaleString('es-CL')}`;
         document.getElementById('kpi-iva').innerHTML = `$${(ivaPag - ivaCred).toLocaleString('es-CL')}`;
         
-        // Tabla
         const tbody = document.getElementById('tabla-body');
         tbody.innerHTML = '';
         filtrados.forEach(reg => {
             const itemsText = reg.items ? reg.items.map(i => `${i.cantidad}x ${i.nombre}`).join(", ") : (reg.detalle || "");
-            const proveedorMostrar = reg.proveedor || '';
-            const rutMostrar = reg.proveedorRut || '';
+            const folioMostrar = reg.folio || '';
             const row = tbody.insertRow();
             row.insertCell(0).innerHTML = reg.fecha.split('-').reverse().join('/');
             row.insertCell(1).innerHTML = `<span class="badge-tipo">${reg.tipo}</span>`;
-            row.insertCell(2).innerHTML = proveedorMostrar || '-';
-            row.insertCell(3).innerHTML = rutMostrar || '-';
-            row.insertCell(4).innerHTML = itemsText.length > 40 ? itemsText.substring(0,40)+"…" : itemsText;
-            row.insertCell(5).innerHTML = `$${Number(reg.neto).toLocaleString('es-CL')}`;
-            row.insertCell(6).innerHTML = `$${Number(reg.iva).toLocaleString('es-CL')}`;
-            row.insertCell(7).innerHTML = `<strong>$${Number(reg.total).toLocaleString('es-CL')}</strong>`;
-            row.insertCell(8).className = "text-right actions-icons";
-            row.cells[8].innerHTML = `<i class="fas fa-edit" onclick="editarRegistro('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
+            row.insertCell(2).innerHTML = reg.proveedor || '-';
+            row.insertCell(3).innerHTML = reg.proveedorRut || '-';
+            row.insertCell(4).innerHTML = folioMostrar || '-';
+            row.insertCell(5).innerHTML = itemsText.length > 35 ? itemsText.substring(0,35)+"…" : itemsText;
+            row.insertCell(6).innerHTML = `$${Number(reg.neto).toLocaleString('es-CL')}`;
+            row.insertCell(7).innerHTML = `$${Number(reg.iva).toLocaleString('es-CL')}`;
+            row.insertCell(8).innerHTML = `<strong>$${Number(reg.total).toLocaleString('es-CL')}</strong>`;
+            row.insertCell(9).className = "text-right actions-icons";
+            row.cells[9].innerHTML = `<i class="fas fa-edit" onclick="editarRegistro('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
         });
         
         // Gráfico
@@ -508,7 +522,7 @@
         });
     }
     
-    // Exportar PDF y Excel
+    // Exportar
     window.exportarPDF = () => {
         const periodo = periodoInput.value;
         const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
@@ -516,33 +530,28 @@
         const doc = new jsPDF({ orientation: 'landscape' });
         doc.setFontSize(16);
         doc.text(`Conta Pro - Reporte ${periodo}`, 14, 18);
-        const cols = ["Fecha", "Tipo", "Proveedor", "RUT", "Detalle", "Neto", "IVA", "Total"];
-        const rows = datos.map(d => [d.fecha, d.tipo, d.proveedor || "-", d.proveedorRut || "-", (d.detalle || "").substring(0,50), `$${d.neto}`, `$${d.iva}`, `$${d.total}`]);
-        doc.autoTable({ head: [cols], body: rows, startY: 28, styles: { fontSize: 8 }, headStyles: { fillColor: [15,23,42] } });
+        const cols = ["Fecha", "Tipo", "Proveedor", "RUT", "Folio", "Detalle", "Neto", "IVA", "Total"];
+        const rows = datos.map(d => [d.fecha, d.tipo, d.proveedor || "-", d.proveedorRut || "-", d.folio || "-", (d.detalle || "").substring(0,40), `$${d.neto}`, `$${d.iva}`, `$${d.total}`]);
+        doc.autoTable({ head: [cols], body: rows, startY: 28, styles: { fontSize: 7 }, headStyles: { fillColor: [15,23,42] } });
         doc.save(`ContaPro_${periodo}.pdf`);
         alert("PDF generado");
     };
-    
     window.exportarExcel = () => {
         const periodo = periodoInput.value;
         const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
-        const wsData = datos.map(d => ({ Fecha: d.fecha, Tipo: d.tipo, Proveedor: d.proveedor, RUT: d.proveedorRut, Detalle: d.detalle, Neto: d.neto, IVA: d.iva, Total: d.total }));
+        const wsData = datos.map(d => ({ Fecha: d.fecha, Tipo: d.tipo, Proveedor: d.proveedor, RUT: d.proveedorRut, Folio: d.folio, Detalle: d.detalle, Neto: d.neto, IVA: d.iva, Total: d.total }));
         const ws = XLSX.utils.json_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `ContaPro_${periodo}`);
         XLSX.writeFile(wb, `ContaPro_${periodo}.xlsx`);
         alert("Excel generado");
     };
-    
     document.getElementById('btn-export-pdf').addEventListener('click', () => window.exportarPDF());
     document.getElementById('btn-export-excel').addEventListener('click', () => window.exportarExcel());
     
     // Configuración modal
     const modal = document.getElementById('modal-config');
-    const abrirConfig = () => {
-        renderizarConfigModal();
-        modal.style.display = 'flex';
-    };
+    const abrirConfig = () => { renderizarConfigModal(); modal.style.display = 'flex'; };
     const cerrarConfig = () => modal.style.display = 'none';
     document.getElementById('btn-abrir-config').addEventListener('click', abrirConfig);
     document.getElementById('cerrar-modal').addEventListener('click', cerrarConfig);
@@ -566,7 +575,6 @@
             subcatDiv.appendChild(div);
         });
     }
-    
     window.agregarTipo = () => {
         const inp = document.getElementById('new-tipo');
         if (inp.value.trim()) {
@@ -602,7 +610,7 @@
     document.getElementById('btn-add-tipo').addEventListener('click', () => window.agregarTipo());
     document.getElementById('btn-add-subcat').addEventListener('click', () => window.agregarSubcat());
     
-    // Filtros chips
+    // Filtros y listener de período
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
             chip.classList.toggle('active');
@@ -611,7 +619,7 @@
     });
     periodoInput.addEventListener('change', () => renderDashboard());
     
-    // Escuchar cambios en Firebase
+    // Firebase snapshot
     onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
         allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderDashboard();
