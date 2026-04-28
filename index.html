@@ -4,739 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Conta Pro | Sistema Contable Empresarial</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fb; color: #1e293b; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%); color: #e2e8f0; flex-shrink: 0; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.08); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .brand { padding: 28px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 24px; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 46px; height: 46px; background: linear-gradient(135deg, #3b82f6, #06b6d4); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: white; box-shadow: 0 8px 14px -6px rgba(59,130,246,0.4); }
+        .logo-text { font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo-text span { background: linear-gradient(135deg, #3b82f6, #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .period-box { background: rgba(255,255,255,0.05); margin: 0 20px 24px 20px; padding: 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); }
+        .period-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
+        .month-input { background: #0f1326; border: 1px solid #1e2438; color: white; padding: 12px; border-radius: 14px; width: 100%; font-weight: 500; outline: none; }
+        .kpi-stack { margin: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+        .kpi-card { background: rgba(255,255,255,0.03); border-radius: 18px; padding: 16px; border-left: 4px solid; }
+        .kpi-card.ventas { border-left-color: #3b82f6; }
+        .kpi-card.caja { border-left-color: #f97316; }
+        .kpi-card.iva { border-left-color: #8b5cf6; }
+        .kpi-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #94a3b8; }
+        .kpi-value { font-size: 1.6rem; font-weight: 800; margin-top: 6px; color: white; }
+        .actions { margin-top: auto; padding: 24px 20px 32px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-side { background: rgba(255,255,255,0.05); border: 1px solid #1e2438; border-radius: 40px; padding: 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-side.pdf:hover { background: #e11d48; }
+        .btn-side.excel:hover { background: #059669; }
+        .btn-side.config { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #60a5fa; }
+
+        .main { flex: 1; padding: 28px 32px; background: #f8fafc; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .title h1 { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, #0f172a, #334155); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #475569; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .card { background: white; border-radius: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #eef2ff; overflow: hidden; }
+        .card-header { padding: 20px 24px 0 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-header h3 { font-weight: 700; font-size: 1.1rem; color: #0f172a; }
+        .form { padding: 20px 24px 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .input-group { margin-bottom: 6px; }
+        .input-group label { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .input { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 14px; font-size: 0.9rem; background: white; }
+        .input:focus { border-color: #3b82f6; outline: none; }
+        .items-container { background: #f8fafc; border-radius: 18px; padding: 16px; margin: 16px 0; }
+        .item-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+        .item-row input { flex: 1; min-width: 100px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .btn-add { background: #3b82f6; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; margin-top: 8px; }
+        .btn-remove { background: #ef4444; color: white; border: none; width: 32px; height: 32px; border-radius: 32px; cursor: pointer; }
+        .money-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; background: #f1f5f9; padding: 16px; border-radius: 20px; margin: 16px 0; }
+        .btn-save { background: linear-gradient(105deg, #0f172a, #1e293b); border: none; padding: 14px; border-radius: 40px; font-weight: 700; color: white; width: 100%; cursor: pointer; }
+        .btn-save:active { transform: scale(0.98); }
+        .chart-container { padding: 20px; height: 260px; }
+        .fullwidth { grid-column: span 2; }
+        .table-wrapper { overflow-x: auto; padding: 0 4px 20px 4px; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 750px; }
+        .data-table th { text-align: left; padding: 14px 12px; background: #f8fafc; font-size: 0.7rem; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #f0f2f5; font-size: 0.8rem; }
+        .badge-tipo { background: #eef2ff; padding: 4px 10px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #1e40af; display: inline-block; }
+        .actions-icons i { margin: 0 4px; cursor: pointer; color: #94a3b8; font-size: 1rem; }
+        .actions-icons i:hover { color: #3b82f6; }
+        .filter-bar { display: flex; gap: 8px; margin: 16px 20px; flex-wrap: wrap; }
+        .chip { background: white; border: 1px solid #e2e8f0; padding: 6px 16px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .chip.active { background: #0f172a; color: white; border-color: #0f172a; }
+        .text-right { text-align: right; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 28px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 24px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-modal { background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; }
+        .config-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .config-item button { background: #ef4444; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; }
+        .add-config { display: flex; gap: 8px; margin-top: 16px; }
+        .add-config input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
-            color: #1a1f36;
-            overflow-x: hidden;
-        }
-
-        /* Scrollbar Moderno */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #e4e8f0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Layout Principal */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Premium */
-        .sidebar-premium {
-            width: 280px;
-            background: linear-gradient(180deg, #0a0f2c 0%, #070b1f 100%);
-            color: #e2e8f0;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 8px 0 30px rgba(0, 0, 0, 0.12);
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 10;
-        }
-
-        .brand-premium {
-            padding: 32px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            margin-bottom: 28px;
-        }
-
-        .logo-wrapper-premium {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon-premium {
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(135deg, #3b82f6, #06b6d4);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 22px;
-            color: white;
-            box-shadow: 0 10px 20px -8px rgba(59, 130, 246, 0.4);
-        }
-
-        .brand-text-premium {
-            font-weight: 800;
-            font-size: 1.6rem;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .brand-text-premium span {
-            background: linear-gradient(135deg, #3b82f6, #38bdf8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        /* Period Selector */
-        .period-premium {
-            background: rgba(255, 255, 255, 0.05);
-            margin: 0 20px 28px 20px;
-            padding: 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .period-label-premium {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-            color: #64748b;
-            margin-bottom: 10px;
-        }
-
-        .month-input-premium {
-            background: #0f1326;
-            border: 1px solid #1e2438;
-            color: white;
-            padding: 12px 14px;
-            border-radius: 14px;
-            width: 100%;
-            font-weight: 500;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .month-input-premium:focus {
-            border-color: #3b82f6;
-        }
-
-        /* KPI Cards */
-        .kpi-stack-premium {
-            margin: 0 20px 20px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .kpi-card-premium {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 18px;
-            padding: 16px;
-            border-left: 4px solid;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        .kpi-card-premium:hover {
-            background: rgba(59, 130, 246, 0.08);
-        }
-
-        .kpi-card-premium.ventas { border-left-color: #3b82f6; }
-        .kpi-card-premium.caja { border-left-color: #f97316; }
-        .kpi-card-premium.iva { border-left-color: #8b5cf6; }
-
-        .kpi-title-premium {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #64748b;
-            letter-spacing: 1px;
-        }
-
-        .kpi-value-premium {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin-top: 8px;
-            color: white;
-            letter-spacing: -1px;
-        }
-
-        /* Botones Exportar y Config */
-        .actions-premium {
-            margin-top: auto;
-            padding: 24px 20px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .btn-premium {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #1e2438;
-            border-radius: 40px;
-            padding: 12px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            color: #e2e8f0;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-premium.pdf:hover { background: #e11d48; border-color: #e11d48; }
-        .btn-premium.excel:hover { background: #059669; border-color: #059669; }
-        .btn-premium.config { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; }
-        .btn-premium.config:hover { background: #3b82f6; color: white; }
-
-        /* Main Content */
-        .main-premium {
-            flex: 1;
-            padding: 28px 36px;
-            background: #f5f7fb;
-        }
-
-        .header-premium {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .title-premium h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #0f172a, #334155);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .badge-premium {
-            background: white;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            color: #475569;
-            font-size: 0.85rem;
-        }
-
-        /* Grid y Cards */
-        .grid-premium {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            margin-bottom: 32px;
-        }
-
-        .card-premium {
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid #eef2ff;
-            overflow: hidden;
-        }
-
-        .card-header-premium {
-            padding: 22px 26px 0 26px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .card-header-premium h3 {
-            font-weight: 700;
-            font-size: 1.15rem;
-            color: #0f172a;
-        }
-
-        /* Formulario */
-        .form-premium {
-            padding: 20px 26px 26px;
-        }
-
-        .form-grid-premium {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-
-        .input-group-premium {
-            margin-bottom: 8px;
-        }
-
-        .input-group-premium label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .input-premium {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            background: #ffffff;
-        }
-
-        .input-premium:focus {
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
-        }
-
-        /* Items List */
-        .items-container-premium {
-            background: #f8fafc;
-            border-radius: 18px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-
-        .item-row-premium {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .item-row-premium input {
-            flex: 1;
-            min-width: 100px;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-        }
-
-        .btn-add-premium {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        .btn-remove-premium {
-            background: #ef4444;
-            color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 32px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .money-row-premium {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 14px;
-            background: #f1f5f9;
-            padding: 18px;
-            border-radius: 20px;
-            margin: 16px 0;
-        }
-
-        .btn-save-premium {
-            background: linear-gradient(105deg, #0f172a, #1e293b);
-            border: none;
-            padding: 16px;
-            border-radius: 40px;
-            font-weight: 800;
-            color: white;
-            width: 100%;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: transform 0.1s;
-        }
-
-        .btn-save-premium:active {
-            transform: scale(0.98);
-        }
-
-        .chart-premium {
-            padding: 20px;
-            height: 280px;
-        }
-
-        .fullwidth-premium {
-            grid-column: span 2;
-        }
-
-        .table-wrapper-premium {
-            overflow-x: auto;
-            padding: 0 4px 24px 4px;
-        }
-
-        .data-table-premium {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-
-        .data-table-premium th {
-            text-align: left;
-            padding: 16px 16px;
-            background: #f8fafc;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #475569;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .data-table-premium td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #f0f2f5;
-            font-size: 0.85rem;
-        }
-
-        .badge-premium-tipo {
-            background: #eef2ff;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #1e40af;
-            display: inline-block;
-        }
-
-        .actions-premium-icons i {
-            margin: 0 6px;
-            cursor: pointer;
-            color: #94a3b8;
-            transition: 0.2s;
-            font-size: 1.1rem;
-        }
-
-        .actions-premium-icons i:hover {
-            color: #3b82f6;
-        }
-
-        .filter-bar-premium {
-            display: flex;
-            gap: 10px;
-            margin: 16px 20px;
-            flex-wrap: wrap;
-        }
-
-        .chip-premium {
-            background: white;
-            border: 1.5px solid #e2e8f0;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chip-premium.active {
-            background: #0f172a;
-            color: white;
-            border-color: #0f172a;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        /* Modal */
-        .modal-premium {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content-premium {
-            background: white;
-            border-radius: 32px;
-            max-width: 550px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 28px;
-        }
-
-        .modal-header-premium {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .close-premium {
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: #64748b;
-        }
-
-        .config-item-premium {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .config-item-premium button {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 5px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        .add-config-premium {
-            display: flex;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
-        .add-config-premium input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-        }
-
-        /* Responsive */
         @media (max-width: 1024px) {
-            .app-container {
-                flex-direction: column;
-            }
-
-            .sidebar-premium {
-                width: 100%;
-                height: auto;
-                position: relative;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding-bottom: 16px;
-                gap: 12px;
-            }
-
-            .brand-premium {
-                flex: 1;
-                padding: 16px 20px;
-                margin: 0;
-                border-bottom: none;
-            }
-
-            .period-premium {
-                width: auto;
-                min-width: 180px;
-                margin: 8px 12px;
-                padding: 12px;
-            }
-
-            .kpi-stack-premium {
-                flex-direction: row;
-                overflow-x: auto;
-                margin: 8px 12px;
-                gap: 12px;
-            }
-
-            .kpi-card-premium {
-                min-width: 140px;
-                flex-shrink: 0;
-            }
-
-            .kpi-value-premium {
-                font-size: 1.2rem;
-            }
-
-            .actions-premium {
-                flex-direction: row;
-                margin: 8px 12px;
-                padding: 0;
-                width: auto;
-            }
-
-            .btn-premium {
-                padding: 10px 18px;
-                font-size: 0.75rem;
-            }
-
-            .main-premium {
-                padding: 20px;
-            }
-
-            .title-premium h1 {
-                font-size: 1.4rem;
-            }
-
-            .grid-premium {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .fullwidth-premium {
-                grid-column: span 1;
-            }
-
-            .form-grid-premium {
-                grid-template-columns: 1fr;
-                gap: 14px;
-            }
-
-            .money-row-premium {
-                grid-template-columns: 1fr;
-            }
-
-            .input-premium {
-                font-size: 1rem;
-                height: 48px;
-            }
-
-            .btn-save-premium {
-                height: 52px;
-            }
-
-            .chart-premium {
-                height: 240px;
-            }
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding-bottom: 12px; }
+            .brand { flex: 1; padding: 16px; margin: 0; border: none; }
+            .period-box { width: auto; min-width: 180px; margin: 8px; padding: 12px; }
+            .kpi-stack { flex-direction: row; overflow-x: auto; margin: 8px; gap: 10px; }
+            .kpi-card { min-width: 140px; }
+            .kpi-value { font-size: 1.2rem; }
+            .actions { flex-direction: row; margin: 8px; padding: 0; }
+            .btn-side { padding: 8px 16px; }
+            .main { padding: 16px; }
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .fullwidth { grid-column: span 1; }
+            .form-grid { grid-template-columns: 1fr; }
+            .money-row { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 480px) {
-            .kpi-card-premium {
-                min-width: 120px;
-            }
-
-            .kpi-value-premium {
-                font-size: 1rem;
-            }
+            .kpi-card { min-width: 120px; }
+            .kpi-value { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <aside class="sidebar-premium">
-        <div class="brand-premium">
-            <div class="logo-wrapper-premium">
-                <div class="logo-icon-premium">CP</div>
-                <div class="brand-text-premium">Conta<span>Pro</span></div>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo">
+                <div class="logo-icon">CP</div>
+                <div class="logo-text">Conta<span>Pro</span></div>
             </div>
         </div>
-        <div class="period-premium">
-            <div class="period-label-premium"><i class="fas fa-calendar-alt"></i> PERÍODO CONTABLE</div>
-            <input type="month" id="periodo-mes" class="month-input-premium">
+        <div class="period-box">
+            <div class="period-label"><i class="fas fa-calendar-alt"></i> PERÍODO CONTABLE</div>
+            <input type="month" id="periodo" class="month-input">
         </div>
-        <div class="kpi-stack-premium">
-            <div class="kpi-card-premium ventas">
-                <div class="kpi-title-premium"><i class="fas fa-chart-line"></i> Ventas Netas</div>
-                <div class="kpi-value-premium" id="kpi-ventas">$0</div>
-            </div>
-            <div class="kpi-card-premium caja">
-                <div class="kpi-title-premium"><i class="fas fa-coins"></i> Caja Chica</div>
-                <div class="kpi-value-premium" id="kpi-caja">$0</div>
-            </div>
-            <div class="kpi-card-premium iva">
-                <div class="kpi-title-premium"><i class="fas fa-percent"></i> IVA a Pagar</div>
-                <div class="kpi-value-premium" id="kpi-iva">$0</div>
-            </div>
+        <div class="kpi-stack">
+            <div class="kpi-card ventas"><div class="kpi-title"><i class="fas fa-chart-line"></i> Ventas Netas</div><div class="kpi-value" id="kpi-ventas">$0</div></div>
+            <div class="kpi-card caja"><div class="kpi-title"><i class="fas fa-coins"></i> Caja Chica</div><div class="kpi-value" id="kpi-caja">$0</div></div>
+            <div class="kpi-card iva"><div class="kpi-title"><i class="fas fa-percent"></i> IVA a Pagar</div><div class="kpi-value" id="kpi-iva">$0</div></div>
         </div>
-        <div class="actions-premium">
-            <button class="btn-premium config" onclick="abrirModalConfig()"><i class="fas fa-cog"></i> CONFIGURACIÓN</button>
-            <button class="btn-premium pdf" onclick="exportarReporte('pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
-            <button class="btn-premium excel" onclick="exportarReporte('excel')"><i class="fas fa-file-excel"></i> EXCEL</button>
+        <div class="actions">
+            <button class="btn-side config" id="btn-abrir-config"><i class="fas fa-cog"></i> CONFIGURACIÓN</button>
+            <button class="btn-side pdf" id="btn-export-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button class="btn-side excel" id="btn-export-excel"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
     </aside>
-    <main class="main-premium">
-        <div class="header-premium">
-            <div class="title-premium"><h1><i class="fas fa-chart-pie"></i> Dashboard Ejecutivo</h1></div>
-            <div class="badge-premium"><i class="far fa-clock"></i> Tiempo Real</div>
+    <main class="main">
+        <div class="header">
+            <div class="title"><h1><i class="fas fa-chart-pie"></i> Dashboard Ejecutivo</h1></div>
+            <div class="badge"><i class="far fa-clock"></i> Tiempo Real</div>
         </div>
-        <div class="grid-premium">
-            <div class="card-premium">
-                <div class="card-header-premium"><h3><i class="fas fa-plus-circle"></i> Registrar Movimiento</h3></div>
-                <form id="form-registro" class="form-premium">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-plus-circle"></i> Registrar Movimiento</h3></div>
+                <form id="form-registro" class="form">
                     <input type="hidden" id="edit-id">
-                    <div class="form-grid-premium">
-                        <div class="input-group-premium"><label>Fecha</label><input type="date" id="fecha" class="input-premium" required></div>
-                        <div class="input-group-premium"><label>Categoría</label><select id="categoria" class="input-premium" required><option value="negocio">Libro Compra/Venta</option><option value="cajachica">Caja Chica</option></select></div>
-                        <div class="input-group-premium"><label>Tipo Documento</label><select id="tipo" class="input-premium" required></select></div>
-                        <div class="input-group-premium"><label>Subcategoría</label><select id="subcategoria" class="input-premium"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio (Internet, Teléfono, Luz, etc)</option></select></div>
+                    <div class="form-grid">
+                        <div class="input-group"><label>Fecha</label><input type="date" id="fecha" class="input" required></div>
+                        <div class="input-group"><label>Categoría</label><select id="categoria" class="input" required><option value="negocio">Libro Compra/Venta</option><option value="cajachica">Caja Chica</option></select></div>
+                        <div class="input-group"><label>Tipo Documento</label><select id="tipo" class="input" required></select></div>
+                        <div class="input-group"><label>Subcategoría</label><select id="subcategoria" class="input"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio (Internet, Teléfono, Luz)</option></select></div>
                     </div>
-                    <div class="input-group-premium"><label>Proveedor/Cliente (Opcional)</label><input type="text" id="proveedor" class="input-premium" placeholder="RUT o Nombre"></div>
-                    
-                    <div class="items-container-premium">
-                        <label style="font-weight:700; font-size:0.75rem; color:#475569;">📦 Items / Conceptos</label>
+                    <div class="input-group"><label>Proveedor/Cliente (Opcional)</label><input type="text" id="proveedor" class="input" placeholder="RUT o Nombre"></div>
+                    <div class="items-container">
+                        <label style="font-weight:700; font-size:0.7rem;">📦 Items / Conceptos</label>
                         <div id="items-list"></div>
-                        <button type="button" class="btn-add-premium" onclick="agregarItem()">+ Agregar Item</button>
+                        <button type="button" class="btn-add" id="btn-add-item">+ Agregar Item</button>
                     </div>
-                    
-                    <div class="money-row-premium">
-                        <div><label>Neto $</label><input type="number" id="neto" class="input-premium" placeholder="0" readonly></div>
-                        <div><label>IVA $</label><input type="number" id="iva" class="input-premium" readonly></div>
-                        <div><label>Total $</label><input type="number" id="total" class="input-premium" placeholder="0"></div>
+                    <div class="money-row">
+                        <div><label>Neto $</label><input type="number" id="neto" class="input" placeholder="0" readonly></div>
+                        <div><label>IVA $</label><input type="number" id="iva" class="input" readonly></div>
+                        <div><label>Total $</label><input type="number" id="total" class="input" placeholder="0"></div>
                     </div>
-                    <button type="submit" id="btn-submit" class="btn-save-premium"><i class="fas fa-save"></i> GUARDAR REGISTRO</button>
+                    <button type="submit" id="btn-submit" class="btn-save"><i class="fas fa-save"></i> GUARDAR REGISTRO</button>
                 </form>
             </div>
-            <div class="card-premium">
-                <div class="card-header-premium"><h3><i class="fas fa-chart-bar"></i> Comparativa Mensual</h3></div>
-                <div class="chart-premium"><canvas id="chartComparativo"></canvas></div>
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Comparativa Mensual</h3></div>
+                <div class="chart-container"><canvas id="grafico"></canvas></div>
             </div>
-            <div class="card-premium fullwidth-premium">
-                <div class="card-header-premium"><h3><i class="fas fa-table-list"></i> Libro Mayor</h3></div>
-                <div class="filter-bar-premium">
-                    <button class="chip-premium active" data-filter="Factura Venta">📈 Ventas</button>
-                    <button class="chip-premium active" data-filter="Factura Compra">📦 Compras</button>
-                    <button class="chip-premium active" data-filter="Gasto Caja Chica">💵 Caja Chica</button>
-                    <button class="chip-premium active" data-filter="Factura Servicio">🔧 Servicios</button>
+            <div class="card fullwidth">
+                <div class="card-header"><h3><i class="fas fa-table-list"></i> Libro Mayor</h3></div>
+                <div class="filter-bar" id="filter-bar">
+                    <button class="chip active" data-filter="Factura Venta">📈 Ventas</button>
+                    <button class="chip active" data-filter="Factura Compra">📦 Compras</button>
+                    <button class="chip active" data-filter="Gasto Caja Chica">💵 Caja Chica</button>
+                    <button class="chip active" data-filter="Factura Servicio">🔧 Servicios</button>
                 </div>
-                <div class="table-wrapper-premium">
-                    <table class="data-table-premium">
-                        <thead>
-                            <tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Detalle Items</th><th>Neto</th><th>IVA</th><th>Total</th><th>Acciones</th></tr>
-                        </thead>
-                        <tbody id="tabla-cuerpo"></tbody>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Detalle</th><th>Neto</th><th>IVA</th><th>Total</th><th>Acciones</th></tr></thead>
+                        <tbody id="tabla-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -744,22 +183,17 @@
     </main>
 </div>
 
-<!-- Modal Configuración -->
-<div id="modalConfig" class="modal-premium">
-    <div class="modal-content-premium">
-        <div class="modal-header-premium">
-            <h3><i class="fas fa-sliders-h"></i> Configuración Avanzada</h3>
-            <button class="close-premium" onclick="cerrarModalConfig()">&times;</button>
-        </div>
+<div id="modal-config" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3><i class="fas fa-sliders-h"></i> Configuración</h3><button class="close-modal" id="cerrar-modal">&times;</button></div>
         <h4>Tipo de Documentos</h4>
         <div id="tipos-list"></div>
-        <div class="add-config-premium"><input type="text" id="newTipo" placeholder="Ej: Nota Crédito"><button onclick="agregarTipoConfig()" class="btn-add-premium">+ Agregar</button></div>
-        <hr style="margin: 20px 0">
+        <div class="add-config"><input type="text" id="new-tipo" placeholder="Ej: Nota Crédito"><button id="btn-add-tipo" class="btn-add">+ Agregar</button></div>
+        <hr style="margin:20px 0">
         <h4>Subcategorías</h4>
         <div id="subcat-list"></div>
-        <div class="add-config-premium"><input type="text" id="newSubcat" placeholder="Ej: Honorarios"><button onclick="agregarSubcatConfig()" class="btn-add-premium">+ Agregar</button></div>
-        <hr style="margin: 20px 0">
-        <button class="btn-save-premium" onclick="cerrarModalConfig()">Cerrar</button>
+        <div class="add-config"><input type="text" id="new-subcat" placeholder="Ej: Honorarios"><button id="btn-add-subcat" class="btn-add">+ Agregar</button></div>
+        <button class="btn-save" id="btn-cerrar-config" style="margin-top:20px;">Cerrar</button>
     </div>
 </div>
 
@@ -776,7 +210,7 @@
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "firebase/firestore";
     
-    // Firebase Config
+    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAVu7GL7IxjgwNGqrIzMp0Xn9ra5c30eEE",
         authDomain: "contaflow-22b0e.firebaseapp.com",
@@ -790,26 +224,25 @@
     const db = getFirestore(app);
     const registrosRef = collection(db, "registros");
     let allData = [];
-    let chartInstance = null;
+    let chart = null;
     let itemsArray = [{ nombre: "", cantidad: 1, precio: 0 }];
     
     // Configuración dinámica
     let tiposDocumento = ["Factura Venta", "Factura Compra", "Boleta Venta", "Gasto Caja Chica", "Factura Servicio"];
     let subcategorias = ["producto", "servicio"];
     
-    function guardarConfigLocal() {
-        localStorage.setItem("tiposDocContaPro", JSON.stringify(tiposDocumento));
-        localStorage.setItem("subcatContaPro", JSON.stringify(subcategorias));
+    function guardarConfig() {
+        localStorage.setItem("tiposDoc", JSON.stringify(tiposDocumento));
+        localStorage.setItem("subcats", JSON.stringify(subcategorias));
     }
     
-    function cargarConfigLocal() {
-        const t = localStorage.getItem("tiposDocContaPro");
+    function cargarConfig() {
+        const t = localStorage.getItem("tiposDoc");
         if (t) tiposDocumento = JSON.parse(t);
-        const s = localStorage.getItem("subcatContaPro");
+        const s = localStorage.getItem("subcats");
         if (s) subcategorias = JSON.parse(s);
     }
-    
-    cargarConfigLocal();
+    cargarConfig();
     
     function actualizarSelectTipos() {
         const select = document.getElementById('tipo');
@@ -823,141 +256,359 @@
         });
     }
     
-    function renderizarConfigModal() {
-        const tiposDiv = document.getElementById('tipos-list');
-        if (tiposDiv) {
-            tiposDiv.innerHTML = '';
-            tiposDocumento.forEach((t, idx) => {
-                const div = document.createElement('div');
-                div.className = 'config-item-premium';
-                div.innerHTML = `<span>${t}</span><button onclick="eliminarTipoConfig(${idx})">Eliminar</button>`;
-                tiposDiv.appendChild(div);
-            });
-        }
-        const subcatDiv = document.getElementById('subcat-list');
-        if (subcatDiv) {
-            subcatDiv.innerHTML = '';
-            subcategorias.forEach((s, idx) => {
-                const div = document.createElement('div');
-                div.className = 'config-item-premium';
-                div.innerHTML = `<span>${s}</span><button onclick="eliminarSubcatConfig(${idx})">Eliminar</button>`;
-                subcatDiv.appendChild(div);
-            });
-        }
+    function actualizarSubcategorias() {
+        const select = document.getElementById('subcategoria');
+        if (!select) return;
+        select.innerHTML = '';
+        subcategorias.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+            select.appendChild(opt);
+        });
     }
     
-    window.agregarTipoConfig = () => {
-        const input = document.getElementById('newTipo');
-        if (input.value.trim()) {
-            tiposDocumento.push(input.value.trim());
-            guardarConfigLocal();
-            actualizarSelectTipos();
-            renderizarConfigModal();
-            input.value = '';
-        }
-    };
+    actualizarSelectTipos();
+    actualizarSubcategorias();
     
-    window.eliminarTipoConfig = (idx) => {
-        tiposDocumento.splice(idx, 1);
-        guardarConfigLocal();
-        actualizarSelectTipos();
-        renderizarConfigModal();
-    };
+    // Elementos del DOM
+    const periodoInput = document.getElementById('periodo');
+    const fechaInput = document.getElementById('fecha');
+    const proveedorInput = document.getElementById('proveedor');
+    const netoInput = document.getElementById('neto');
+    const ivaInput = document.getElementById('iva');
+    const totalInput = document.getElementById('total');
+    const editIdInput = document.getElementById('edit-id');
+    const btnSubmit = document.getElementById('btn-submit');
+    const form = document.getElementById('form-registro');
+    const tipoSelect = document.getElementById('tipo');
     
-    window.agregarSubcatConfig = () => {
-        const input = document.getElementById('newSubcat');
-        if (input.value.trim()) {
-            subcategorias.push(input.value.trim());
-            guardarConfigLocal();
-            const subcatSelect = document.getElementById('subcategoria');
-            if (subcatSelect) {
-                subcatSelect.innerHTML = '';
-                subcategorias.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
-                    subcatSelect.appendChild(opt);
-                });
-            }
-            renderizarConfigModal();
-            input.value = '';
-        }
-    };
-    
-    window.eliminarSubcatConfig = (idx) => {
-        subcategorias.splice(idx, 1);
-        guardarConfigLocal();
-        const subcatSelect = document.getElementById('subcategoria');
-        if (subcatSelect) {
-            subcatSelect.innerHTML = '';
-            subcategorias.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s;
-                opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
-                subcatSelect.appendChild(opt);
-            });
-        }
-        renderizarConfigModal();
-    };
-    
-    window.abrirModalConfig = () => {
-        renderizarConfigModal();
-        document.getElementById('modalConfig').style.display = 'flex';
-    };
-    
-    window.cerrarModalConfig = () => {
-        document.getElementById('modalConfig').style.display = 'none';
-    };
+    // Fecha actual
+    const hoy = new Date();
+    fechaInput.valueAsDate = hoy;
+    periodoInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
     
     // Items dinámicos
-    window.agregarItem = () => {
-        itemsArray.push({ nombre: "", cantidad: 1, precio: 0 });
-        renderItemsList();
-    };
-    
-    window.eliminarItem = (idx) => {
-        itemsArray.splice(idx, 1);
-        if (itemsArray.length === 0) itemsArray.push({ nombre: "", cantidad: 1, precio: 0 });
-        renderItemsList();
-        calcularTotalesItems();
-    };
-    
-    window.actualizarItem = (idx, campo, valor) => {
-        if (campo === 'cantidad' || campo === 'precio') {
-            itemsArray[idx][campo] = parseFloat(valor) || 0;
-        } else {
-            itemsArray[idx][campo] = valor;
-        }
-        calcularTotalesItems();
-    };
-    
-    function renderItemsList() {
+    function renderItems() {
         const container = document.getElementById('items-list');
         if (!container) return;
         container.innerHTML = '';
         itemsArray.forEach((item, idx) => {
             const div = document.createElement('div');
-            div.className = 'item-row-premium';
+            div.className = 'item-row';
             div.innerHTML = `
-                <input type="text" placeholder="Producto/Servicio" value="${item.nombre}" onchange="actualizarItem(${idx},'nombre',this.value)" style="flex:2">
-                <input type="number" placeholder="Cant" value="${item.cantidad}" onchange="actualizarItem(${idx},'cantidad',this.value)" style="width:70px">
-                <input type="number" placeholder="Precio" value="${item.precio}" onchange="actualizarItem(${idx},'precio',this.value)" style="width:100px">
-                <button class="btn-remove-premium" onclick="eliminarItem(${idx})">✕</button>
+                <input type="text" placeholder="Producto/Servicio" value="${item.nombre.replace(/"/g, '&quot;')}" data-idx="${idx}" data-field="nombre" class="item-nombre" style="flex:2">
+                <input type="number" placeholder="Cant" value="${item.cantidad}" data-idx="${idx}" data-field="cantidad" class="item-cant" style="width:70px">
+                <input type="number" placeholder="Precio" value="${item.precio}" data-idx="${idx}" data-field="precio" class="item-precio" style="width:100px">
+                <button class="btn-remove" data-idx="${idx}">✕</button>
             `;
             container.appendChild(div);
         });
+        
+        // Eventos
+        document.querySelectorAll('.item-nombre').forEach(inp => inp.addEventListener('change', (e) => {
+            itemsArray[parseInt(e.target.dataset.idx)].nombre = e.target.value;
+            calcularTotales();
+        }));
+        document.querySelectorAll('.item-cant').forEach(inp => inp.addEventListener('input', (e) => {
+            itemsArray[parseInt(e.target.dataset.idx)].cantidad = parseFloat(e.target.value) || 0;
+            calcularTotales();
+        }));
+        document.querySelectorAll('.item-precio').forEach(inp => inp.addEventListener('input', (e) => {
+            itemsArray[parseInt(e.target.dataset.idx)].precio = parseFloat(e.target.value) || 0;
+            calcularTotales();
+        }));
+        document.querySelectorAll('.btn-remove').forEach(btn => btn.addEventListener('click', (e) => {
+            const idx = parseInt(btn.dataset.idx);
+            itemsArray.splice(idx, 1);
+            if (itemsArray.length === 0) itemsArray.push({ nombre: "", cantidad: 1, precio: 0 });
+            renderItems();
+            calcularTotales();
+        }));
     }
     
-    function calcularTotalesItems() {
-        let netoTotal = 0;
-        itemsArray.forEach(item => {
-            netoTotal += (item.cantidad || 0) * (item.precio || 0);
+    function calcularTotales() {
+        let neto = 0;
+        itemsArray.forEach(item => neto += (item.cantidad || 0) * (item.precio || 0));
+        netoInput.value = Math.round(neto);
+        const esFactura = tipoSelect.value.includes("Factura");
+        const iva = esFactura ? Math.round(neto * 0.19) : 0;
+        ivaInput.value = iva;
+        totalInput.value = neto + iva;
+    }
+    
+    function calcularDesdeTotal() {
+        const total = parseFloat(totalInput.value) || 0;
+        const esFactura = tipoSelect.value.includes("Factura");
+        if (esFactura && total > 0) {
+            const neto = Math.round(total / 1.19);
+            netoInput.value = neto;
+            ivaInput.value = total - neto;
+        } else if (!esFactura) {
+            netoInput.value = total;
+            ivaInput.value = 0;
+        }
+    }
+    
+    totalInput.addEventListener('input', calcularDesdeTotal);
+    tipoSelect.addEventListener('change', () => calcularTotales());
+    
+    document.getElementById('btn-add-item').addEventListener('click', () => {
+        itemsArray.push({ nombre: "", cantidad: 1, precio: 0 });
+        renderItems();
+        calcularTotales();
+    });
+    
+    // Guardar registro
+    async function guardar(e) {
+        e.preventDefault();
+        const id = editIdInput.value;
+        const itemsValidos = itemsArray.filter(i => i.nombre.trim() !== "");
+        const descripcion = itemsValidos.map(i => `${i.cantidad}x ${i.nombre}`).join(", ");
+        const data = {
+            fecha: fechaInput.value,
+            categoria: document.getElementById('categoria').value,
+            tipo: tipoSelect.value,
+            subcategoria: document.getElementById('subcategoria').value,
+            proveedor: proveedorInput.value || "",
+            detalle: descripcion || "Sin detalle",
+            items: itemsValidos,
+            neto: Number(netoInput.value) || 0,
+            iva: Number(ivaInput.value) || 0,
+            total: Number(totalInput.value) || 0,
+        };
+        try {
+            if (id) {
+                await updateDoc(doc(db, "registros", id), data);
+                alert("Actualizado");
+            } else {
+                await addDoc(registrosRef, data);
+                alert("Guardado");
+            }
+            limpiarForm();
+        } catch(error) {
+            alert("Error: " + error.message);
+        }
+    }
+    
+    function limpiarForm() {
+        editIdInput.value = "";
+        btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR REGISTRO';
+        fechaInput.valueAsDate = new Date();
+        proveedorInput.value = "";
+        itemsArray = [{ nombre: "", cantidad: 1, precio: 0 }];
+        renderItems();
+        calcularTotales();
+        document.getElementById('subcategoria').value = "producto";
+        document.getElementById('categoria').value = "negocio";
+    }
+    
+    form.addEventListener('submit', guardar);
+    
+    // Funciones globales para editar/eliminar
+    window.editarRegistro = (id) => {
+        const reg = allData.find(r => r.id === id);
+        if (!reg) return;
+        editIdInput.value = id;
+        fechaInput.value = reg.fecha;
+        proveedorInput.value = reg.proveedor || "";
+        tipoSelect.value = reg.tipo;
+        document.getElementById('categoria').value = reg.categoria;
+        document.getElementById('subcategoria').value = reg.subcategoria || "producto";
+        if (reg.items && reg.items.length) {
+            itemsArray = JSON.parse(JSON.stringify(reg.items));
+        } else {
+            itemsArray = [{ nombre: reg.detalle || "Item", cantidad: 1, precio: reg.neto }];
+        }
+        renderItems();
+        netoInput.value = reg.neto;
+        ivaInput.value = reg.iva;
+        totalInput.value = reg.total;
+        btnSubmit.innerHTML = '<i class="fas fa-pen"></i> ACTUALIZAR REGISTRO';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    window.eliminarRegistro = async (id) => {
+        if (confirm("¿Eliminar este movimiento?")) {
+            await deleteDoc(doc(db, "registros", id));
+            alert("Eliminado");
+        }
+    };
+    
+    // Filtros y renderizado del dashboard
+    function obtenerFiltrosActivos() {
+        return Array.from(document.querySelectorAll('.chip.active')).map(c => c.getAttribute('data-filter'));
+    }
+    
+    function renderDashboard() {
+        const periodo = periodoInput.value;
+        const filtros = obtenerFiltrosActivos();
+        const filtrados = allData.filter(d => d.fecha && d.fecha.startsWith(periodo) && filtros.includes(d.tipo));
+        
+        let ventas = 0, caja = 0, ivaPag = 0, ivaCred = 0;
+        filtrados.forEach(d => {
+            const t = d.total || 0;
+            if (d.tipo.includes("Venta") || d.tipo === "Boleta Venta") ventas += t;
+            if (d.tipo === "Gasto Caja Chica") caja += t;
+            if (d.tipo === "Factura Venta") ivaPag += d.iva || 0;
+            if (d.tipo === "Factura Compra" || d.tipo === "Factura Servicio") ivaCred += d.iva || 0;
         });
-        document.getElementById('neto').value = Math.round(netoTotal);
-        const tipo = document.getElementById('tipo').value;
-        const esFactura = tipo.includes("Factura");
-        const iva = esFactura ? Math.round(netoTotal * 0.19) : 0;
-        document.getElementById('iva').value = iva;
-        document.getElementById('total').value = netoTotal + iva;
+        document.getElementById('kpi-ventas').innerHTML = `$${ventas.toLocaleString('es-CL')}`;
+        document.getElementById('kpi-caja').innerHTML = `$${caja.toLocaleString('es-CL')}`;
+        document.getElementById('kpi-iva').innerHTML = `$${(ivaPag - ivaCred).toLocaleString('es-CL')}`;
+        
+        // Tabla
+        const tbody = document.getElementById('tabla-body');
+        tbody.innerHTML = '';
+        filtrados.forEach(reg => {
+            const itemsText = reg.items ? reg.items.map(i => `${i.cantidad}x ${i.nombre}`).join(", ") : (reg.detalle || "");
+            const row = tbody.insertRow();
+            row.insertCell(0).innerHTML = reg.fecha.split('-').reverse().join('/');
+            row.insertCell(1).innerHTML = `<span class="badge-tipo">${reg.tipo}</span>`;
+            row.insertCell(2).innerHTML = reg.proveedor || '-';
+            row.insertCell(3).innerHTML = itemsText.length > 40 ? itemsText.substring(0,40)+"…" : itemsText;
+            row.insertCell(4).innerHTML = `$${Number(reg.neto).toLocaleString('es-CL')}`;
+            row.insertCell(5).innerHTML = `$${Number(reg.iva).toLocaleString('es-CL')}`;
+            row.insertCell(6).innerHTML = `<strong>$${Number(reg.total).toLocaleString('es-CL')}</strong>`;
+            row.insertCell(7).className = "text-right actions-icons";
+            row.cells[7].innerHTML = `<i class="fas fa-edit" onclick="editarRegistro('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
+        });
+        
+        // Gráfico
+        let ventasChart = 0, comprasChart = 0, cajaChart = 0;
+        filtrados.forEach(d => {
+            if (d.tipo.includes("Venta")) ventasChart += d.total;
+            if (d.tipo === "Factura Compra" || d.tipo === "Factura Servicio") comprasChart += d.total;
+            if (d.tipo === "Gasto Caja Chica") cajaChart += d.total;
+        });
+        const ctx = document.getElementById('grafico').getContext('2d');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Ventas', 'Compras/Servicios', 'Caja Chica'],
+                datasets: [{
+                    label: 'Monto CLP',
+                    data: [ventasChart, comprasChart, cajaChart],
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f97316'],
+                    borderRadius: 12
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString('es-CL')}` } } } }
+        });
     }
     
+    // Exportar
+    window.exportarPDF = () => {
+        const periodo = periodoInput.value;
+        const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(16);
+        doc.text(`Conta Pro - Reporte ${periodo}`, 14, 18);
+        const cols = ["Fecha", "Tipo", "Proveedor", "Detalle", "Neto", "IVA", "Total"];
+        const rows = datos.map(d => [d.fecha, d.tipo, d.proveedor || "-", (d.detalle || "").substring(0,50), `$${d.neto}`, `$${d.iva}`, `$${d.total}`]);
+        doc.autoTable({ head: [cols], body: rows, startY: 28, styles: { fontSize: 8 }, headStyles: { fillColor: [15,23,42] } });
+        doc.save(`ContaPro_${periodo}.pdf`);
+        alert("PDF generado");
+    };
+    
+    window.exportarExcel = () => {
+        const periodo = periodoInput.value;
+        const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
+        const wsData = datos.map(d => ({ Fecha: d.fecha, Tipo: d.tipo, Proveedor: d.proveedor, Detalle: d.detalle, Neto: d.neto, IVA: d.iva, Total: d.total }));
+        const ws = XLSX.utils.json_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, `ContaPro_${periodo}`);
+        XLSX.writeFile(wb, `ContaPro_${periodo}.xlsx`);
+        alert("Excel generado");
+    };
+    
+    document.getElementById('btn-export-pdf').addEventListener('click', () => window.exportarPDF());
+    document.getElementById('btn-export-excel').addEventListener('click', () => window.exportarExcel());
+    
+    // Configuración modal
+    const modal = document.getElementById('modal-config');
+    const abrirConfig = () => {
+        renderizarConfigModal();
+        modal.style.display = 'flex';
+    };
+    const cerrarConfig = () => modal.style.display = 'none';
+    document.getElementById('btn-abrir-config').addEventListener('click', abrirConfig);
+    document.getElementById('cerrar-modal').addEventListener('click', cerrarConfig);
+    document.getElementById('btn-cerrar-config').addEventListener('click', cerrarConfig);
+    
+    function renderizarConfigModal() {
+        const tiposDiv = document.getElementById('tipos-list');
+        tiposDiv.innerHTML = '';
+        tiposDocumento.forEach((t, idx) => {
+            const div = document.createElement('div');
+            div.className = 'config-item';
+            div.innerHTML = `<span>${t}</span><button onclick="eliminarTipo(${idx})">Eliminar</button>`;
+            tiposDiv.appendChild(div);
+        });
+        const subcatDiv = document.getElementById('subcat-list');
+        subcatDiv.innerHTML = '';
+        subcategorias.forEach((s, idx) => {
+            const div = document.createElement('div');
+            div.className = 'config-item';
+            div.innerHTML = `<span>${s}</span><button onclick="eliminarSubcat(${idx})">Eliminar</button>`;
+            subcatDiv.appendChild(div);
+        });
+    }
+    
+    window.agregarTipo = () => {
+        const inp = document.getElementById('new-tipo');
+        if (inp.value.trim()) {
+            tiposDocumento.push(inp.value.trim());
+            guardarConfig();
+            actualizarSelectTipos();
+            renderizarConfigModal();
+            inp.value = '';
+        }
+    };
+    window.eliminarTipo = (idx) => {
+        tiposDocumento.splice(idx, 1);
+        guardarConfig();
+        actualizarSelectTipos();
+        renderizarConfigModal();
+    };
+    window.agregarSubcat = () => {
+        const inp = document.getElementById('new-subcat');
+        if (inp.value.trim()) {
+            subcategorias.push(inp.value.trim());
+            guardarConfig();
+            actualizarSubcategorias();
+            renderizarConfigModal();
+            inp.value = '';
+        }
+    };
+    window.eliminarSubcat = (idx) => {
+        subcategorias.splice(idx, 1);
+        guardarConfig();
+        actualizarSubcategorias();
+        renderizarConfigModal();
+    };
+    document.getElementById('btn-add-tipo').addEventListener('click', () => window.agregarTipo());
+    document.getElementById('btn-add-subcat').addEventListener('click', () => window.agregarSubcat());
+    
+    // Filtros chips
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            chip.classList.toggle('active');
+            renderDashboard();
+        });
+    });
+    periodoInput.addEventListener('change', () => renderDashboard());
+    
+    // Escuchar cambios en Firebase
+    onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
+        allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderDashboard();
+    });
+    
+    renderItems();
+    calcularTotales();
+</script>
+</body>
+</html>
