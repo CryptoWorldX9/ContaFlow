@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ContaFlow Pro | Dashboard Corporativo</title>
+    <title>ContaFlow Pro | Sistema Contable Avanzado</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -11,37 +11,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f8; color: #1e293b; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f8;
-            color: #1e293b;
-            overflow-x: hidden;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 10px;
-        }
-
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
+        /* Layout */
+        .app-container { display: flex; min-height: 100vh; }
         .sidebar-modern {
             width: 280px;
             background: linear-gradient(180deg, #0f172a 0%, #0a0f1c 100%);
@@ -49,29 +26,16 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            transition: all 0.3s ease;
             box-shadow: 4px 0 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             height: 100vh;
             overflow-y: auto;
         }
-
-        .brand-corporate {
-            padding: 28px 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            margin-bottom: 24px;
-        }
-
-        .logo-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .brand-corporate { padding: 28px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 24px; }
+        .logo-wrapper { display: flex; align-items: center; gap: 12px; }
         .logo-icon-gradient {
-            width: 44px;
-            height: 44px;
+            width: 44px; height: 44px;
             background: linear-gradient(135deg, #3b82f6, #06b6d4);
             border-radius: 14px;
             display: flex;
@@ -82,357 +46,87 @@
             color: white;
             box-shadow: 0 8px 14px -6px rgba(59,130,246,0.4);
         }
+        .brand-text-custom { font-weight: 700; font-size: 1.5rem; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .brand-text-custom span { background: linear-gradient(135deg, #3b82f6, #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-        .brand-text-custom {
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: -0.3px;
-            background: linear-gradient(135deg, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .brand-text-custom span {
-            font-weight: 800;
-            background: linear-gradient(135deg, #3b82f6, #38bdf8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
+        .period-panel { background: rgba(255,255,255,0.05); margin: 0 20px 24px 20px; padding: 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .period-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
+        .month-input-clean { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 14px; width: 100%; font-weight: 500; outline: none; }
 
-        .period-panel {
-            background: rgba(255,255,255,0.05);
-            margin: 0 20px 24px 20px;
-            padding: 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .period-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
-
-        .month-input-clean {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            padding: 12px;
-            border-radius: 14px;
-            width: 100%;
-            font-weight: 500;
-            outline: none;
-        }
-
-        .kpi-stack {
-            margin: 0 20px 20px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .kpi-card-modern {
-            background: rgba(255,255,255,0.03);
-            border-radius: 20px;
-            padding: 16px;
-            border-left: 4px solid;
-        }
+        .kpi-stack { margin: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+        .kpi-card-modern { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 16px; border-left: 4px solid; }
         .kpi-card-modern.ventas { border-left-color: #3b82f6; }
         .kpi-card-modern.caja { border-left-color: #f97316; }
         .kpi-card-modern.iva { border-left-color: #8b5cf6; }
+        .kpi-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .kpi-value { font-size: 1.8rem; font-weight: 800; margin-top: 6px; color: white; letter-spacing: -1px; }
 
-        .kpi-title {
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #94a3b8;
-            letter-spacing: 1px;
-        }
-        .kpi-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-top: 6px;
-            color: white;
-            letter-spacing: -1px;
-        }
+        .export-group { margin-top: auto; padding: 24px 20px 32px; display: flex; gap: 12px; }
+        .btn-export { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #334155; border-radius: 40px; padding: 12px 0; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .config-btn { background: rgba(255,255,255,0.1); border: 1px solid #3b82f6; color: #3b82f6; margin-bottom: 12px; }
 
-        .export-group {
-            margin-top: auto;
-            padding: 24px 20px 32px;
-            display: flex;
-            gap: 12px;
-        }
-        .btn-export {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #334155;
-            border-radius: 40px;
-            padding: 12px 0;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            color: #e2e8f0;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-export.pdf:active { background: #e11d48; }
-        .btn-export.excel:active { background: #059669; }
+        .main-dashboard { flex: 1; padding: 28px 32px; background: #f8fafc; overflow-x: auto; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .page-title h1 { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, #0f172a, #334155); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .date-badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #475569; }
 
-        .main-dashboard {
-            flex: 1;
-            padding: 28px 32px;
-            background: #f8fafc;
-            overflow-x: auto;
-        }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .card-glass { background: white; border-radius: 28px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid #eef2ff; overflow: hidden; }
+        .card-header-pro { padding: 20px 24px 0 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .card-header-pro h3 { font-weight: 700; font-size: 1.2rem; color: #0f172a; }
+        .form-modern { padding: 20px 24px 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .input-group { margin-bottom: 6px; }
+        .input-group label { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .input-modern { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 16px; font-size: 0.9rem; background: #ffffff; }
+        .input-modern:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .page-title h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #0f172a, #334155);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .date-badge {
-            background: white;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            color: #475569;
-            font-size: 0.85rem;
-        }
+        .items-list-container { background: #f1f5f9; border-radius: 20px; padding: 16px; margin: 16px 0; }
+        .item-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+        .item-row input { flex: 1; min-width: 120px; }
+        .btn-add-item { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; margin-top: 8px; }
+        .btn-remove-item { background: #ef4444; color: white; border: none; width: 30px; height: 30px; border-radius: 30px; cursor: pointer; }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .card-glass {
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-            border: 1px solid #eef2ff;
-            overflow: hidden;
-        }
-
-        .card-header-pro {
-            padding: 20px 24px 0 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .card-header-pro h3 {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #0f172a;
-        }
-
-        .form-modern {
-            padding: 20px 24px 24px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .input-group {
-            margin-bottom: 6px;
-        }
-        .input-group label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            display: block;
-            margin-bottom: 6px;
-        }
-        .input-modern {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 0.9rem;
-            transition: 0.2s;
-            background: #ffffff;
-        }
-        .input-modern:focus {
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-        }
-
-        .money-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            background: #f1f5f9;
-            padding: 16px;
-            border-radius: 20px;
-            margin: 8px 0 16px;
-        }
-
-        .btn-primary-grad {
-            background: linear-gradient(105deg, #0f172a 0%, #1e293b 100%);
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            font-weight: 700;
-            color: white;
-            width: 100%;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            margin-top: 8px;
-        }
-        .btn-primary-grad:active {
-            transform: scale(0.97);
-        }
-
-        .chart-container-modern {
-            padding: 20px;
-            height: 280px;
-        }
-
-        .fullwidth-table {
-            grid-column: span 2;
-        }
-        .table-wrapper {
-            overflow-x: auto;
-            padding: 0 4px 20px 4px;
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
-        .data-table th {
-            text-align: left;
-            padding: 16px 16px;
-            background: #f8fafc;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #475569;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .data-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #f0f2f5;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .badge-tipo {
-            background: #eef2ff;
-            padding: 4px 10px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #1e40af;
-            display: inline-block;
-        }
-        .action-icons i {
-            margin: 0 6px;
-            cursor: pointer;
-            color: #94a3b8;
-            transition: 0.1s;
-            font-size: 1.1rem;
-        }
-        .action-icons i:active { transform: scale(0.9); }
-
-        .filter-chip-bar {
-            display: flex;
-            gap: 8px;
-            margin: 16px 20px;
-            flex-wrap: wrap;
-        }
-        .chip-pro {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .chip-pro.active {
-            background: #0f172a;
-            color: white;
-            border-color: #0f172a;
-        }
-        .chip-pro:active { transform: scale(0.95); }
-
+        .money-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; background: #f1f5f9; padding: 16px; border-radius: 20px; margin: 8px 0 16px; }
+        .btn-primary-grad { background: linear-gradient(105deg, #0f172a 0%, #1e293b 100%); border: none; padding: 14px; border-radius: 40px; font-weight: 700; color: white; width: 100%; cursor: pointer; margin-top: 8px; }
+        .btn-primary-grad:active { transform: scale(0.97); }
+        .chart-container-modern { padding: 20px; height: 280px; }
+        .fullwidth-table { grid-column: span 2; }
+        .table-wrapper { overflow-x: auto; padding: 0 4px 20px 4px; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .data-table th { text-align: left; padding: 16px; background: #f8fafc; font-size: 0.75rem; font-weight: 700; color: #475569; border-bottom: 1px solid #e2e8f0; }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; font-size: 0.8rem; }
+        .badge-tipo { background: #eef2ff; padding: 4px 10px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #1e40af; display: inline-block; }
+        .action-icons i { margin: 0 6px; cursor: pointer; color: #94a3b8; font-size: 1.1rem; }
+        .filter-chip-bar { display: flex; gap: 8px; margin: 16px 20px; flex-wrap: wrap; }
+        .chip-pro { background: white; border: 1px solid #e2e8f0; padding: 8px 18px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .chip-pro.active { background: #0f172a; color: white; border-color: #0f172a; }
         .text-right { text-align: right; }
 
-        /* MÓVIL */
+        /* Modal Configuración */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 32px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 24px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-modal { background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; }
+        .config-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .config-item button { background: #ef4444; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; }
+        .add-config { display: flex; gap: 8px; margin-top: 16px; }
+        .add-config input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; }
+
         @media (max-width: 1024px) {
             .app-container { flex-direction: column; }
-            .sidebar-modern {
-                width: 100%;
-                height: auto;
-                position: relative;
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding-bottom: 16px;
-                gap: 12px;
-            }
-            .brand-corporate {
-                flex: 1;
-                padding: 16px 20px;
-                margin: 0;
-                border-bottom: none;
-            }
-            .logo-wrapper { justify-content: center; }
-            .period-panel {
-                width: auto;
-                min-width: 180px;
-                margin: 8px 12px;
-                padding: 12px;
-            }
-            .kpi-stack {
-                flex-direction: row;
-                margin: 8px 12px;
-                gap: 10px;
-                overflow-x: auto;
-                scrollbar-width: none;
-            }
-            .kpi-stack::-webkit-scrollbar { display: none; }
+            .sidebar-modern { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding-bottom: 16px; gap: 12px; }
+            .brand-corporate { flex: 1; padding: 16px 20px; margin: 0; border-bottom: none; }
+            .kpi-stack { flex-direction: row; overflow-x: auto; margin: 8px 12px; }
             .kpi-card-modern { min-width: 150px; flex-shrink: 0; }
             .kpi-value { font-size: 1.3rem; }
-            .export-group {
-                margin: 8px 12px;
-                padding: 0;
-                width: auto;
-            }
-            .btn-export { padding: 10px 16px; font-size: 0.75rem; }
+            .export-group { margin: 8px 12px; padding: 0; }
             .main-dashboard { padding: 16px; }
             .page-title h1 { font-size: 1.4rem; }
             .grid-2col { grid-template-columns: 1fr; gap: 16px; }
             .fullwidth-table { grid-column: span 1; }
             .form-grid { grid-template-columns: 1fr; gap: 12px; }
-            .money-row { grid-template-columns: 1fr; gap: 10px; }
-            .input-modern { font-size: 1rem; height: 48px; }
-            .btn-primary-grad { height: 50px; }
-            .chart-container-modern { height: 240px; }
+            .money-row { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 480px) {
@@ -455,20 +149,12 @@
             <input type="month" id="periodo-mes" class="month-input-clean">
         </div>
         <div class="kpi-stack">
-            <div class="kpi-card-modern ventas">
-                <div class="kpi-title"><i class="fas fa-chart-line"></i> Ventas Netas</div>
-                <div class="kpi-value" id="kpi-ventas">$0</div>
-            </div>
-            <div class="kpi-card-modern caja">
-                <div class="kpi-title"><i class="fas fa-coins"></i> Caja Chica</div>
-                <div class="kpi-value" id="kpi-caja">$0</div>
-            </div>
-            <div class="kpi-card-modern iva">
-                <div class="kpi-title"><i class="fas fa-percent"></i> IVA a Pagar</div>
-                <div class="kpi-value" id="kpi-iva">$0</div>
-            </div>
+            <div class="kpi-card-modern ventas"><div class="kpi-title"><i class="fas fa-chart-line"></i> Ventas Netas</div><div class="kpi-value" id="kpi-ventas">$0</div></div>
+            <div class="kpi-card-modern caja"><div class="kpi-title"><i class="fas fa-coins"></i> Caja Chica</div><div class="kpi-value" id="kpi-caja">$0</div></div>
+            <div class="kpi-card-modern iva"><div class="kpi-title"><i class="fas fa-percent"></i> IVA a Pagar</div><div class="kpi-value" id="kpi-iva">$0</div></div>
         </div>
         <div class="export-group">
+            <button class="btn-export config-btn" onclick="abrirConfiguracion()"><i class="fas fa-cog"></i> CONFIGURACIÓN</button>
             <button class="btn-export pdf" onclick="window.exportarReporte('pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
             <button class="btn-export excel" onclick="window.exportarReporte('excel')"><i class="fas fa-file-excel"></i> EXCEL</button>
         </div>
@@ -486,22 +172,29 @@
                     <div class="form-grid">
                         <div class="input-group"><label>Fecha</label><input type="date" id="fecha" class="input-modern" required></div>
                         <div class="input-group"><label>Categoría</label><select id="categoria" class="input-modern" required><option value="negocio">Libro Compra/Venta</option><option value="cajachica">Caja Chica</option></select></div>
-                        <div class="input-group"><label>Tipo Doc</label><select id="tipo" class="input-modern" required><option value="Factura Venta">Factura Venta</option><option value="Factura Compra">Factura Compra</option><option value="Boleta Venta">Boleta Venta</option><option value="Gasto Caja Chica">Gasto Caja Chica</option></select></div>
-                        <div class="input-group"><label>Detalle</label><input type="text" id="detalle" placeholder="Ej: Venta Servicios" class="input-modern" required></div>
+                        <div class="input-group"><label>Tipo Documento</label><select id="tipo" class="input-modern" required></select></div>
+                        <div class="input-group"><label>Subcategoría</label><select id="subcategoria" class="input-modern"><option value="producto">Producto/Mercancía</option><option value="servicio">Servicio (Internet, Teléfono, Luz, etc)</option></select></div>
                     </div>
+                    <div class="input-group"><label>Proveedor/Cliente (Opcional)</label><input type="text" id="proveedor" class="input-modern" placeholder="RUT o Nombre"></div>
+                    
+                    <!-- Lista de items/productos -->
+                    <div class="items-list-container">
+                        <label style="font-weight:600; font-size:0.8rem;">📦 Items / Productos / Servicios</label>
+                        <div id="items-list"></div>
+                        <button type="button" class="btn-add-item" onclick="agregarItem()">+ Agregar Item</button>
+                    </div>
+                    
                     <div class="money-row">
-                        <div><label style="font-size:10px;">Neto $</label><input type="number" id="neto" class="input-modern" placeholder="0" value="0"></div>
-                        <div><label style="font-size:10px;">IVA $</label><input type="number" id="iva" class="input-modern" readonly value="0"></div>
-                        <div><label style="font-size:10px;">Total $</label><input type="number" id="total" class="input-modern" placeholder="0" value="0"></div>
+                        <div><label>Neto $</label><input type="number" id="neto" class="input-modern" placeholder="0" readonly></div>
+                        <div><label>IVA $</label><input type="number" id="iva" class="input-modern" readonly></div>
+                        <div><label>Total $</label><input type="number" id="total" class="input-modern" placeholder="0"></div>
                     </div>
                     <button type="submit" id="btn-submit" class="btn-primary-grad"><i class="fas fa-save"></i> GUARDAR REGISTRO</button>
                 </form>
             </div>
             <div class="card-glass">
                 <div class="card-header-pro"><h3><i class="fas fa-chart-bar"></i> Comparativa Mensual</h3></div>
-                <div class="chart-container-modern">
-                    <canvas id="chartComparativo"></canvas>
-                </div>
+                <div class="chart-container-modern"><canvas id="chartComparativo"></canvas></div>
             </div>
             <div class="card-glass fullwidth-table">
                 <div class="card-header-pro"><h3><i class="fas fa-table-list"></i> Libro Mayor</h3></div>
@@ -512,9 +205,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
-                        <thead>
-                            <tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Neto</th><th>IVA</th><th>Total</th><th class="text-right">Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Detalle Items</th><th>Neto</th><th>IVA</th><th>Total</th><th class="text-right">Acciones</th></tr></thead>
                         <tbody id="tabla-cuerpo"></tbody>
                     </table>
                 </div>
@@ -523,15 +214,25 @@
     </main>
 </div>
 
-<script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
-        }
-    }
-</script>
+<!-- Modal Configuración -->
+<div id="modalConfig" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3><i class="fas fa-sliders-h"></i> Configuración Avanzada</h3><button class="close-modal" onclick="cerrarConfiguracion()">&times;</button></div>
+        <h4>Tipo de Documentos</h4>
+        <div id="tipos-list"></div>
+        <div class="add-config"><input type="text" id="newTipo" placeholder="Ej: Nota Crédito"><button onclick="agregarTipo()" class="btn-primary-grad" style="width:auto; padding:10px 20px;">+</button></div>
+        <hr style="margin:20px 0">
+        <h4>Subcategorías</h4>
+        <div id="subcat-list"></div>
+        <div class="add-config"><input type="text" id="newSubcat" placeholder="Ej: Honorarios"><button onclick="agregarSubcategoria()" class="btn-primary-grad" style="width:auto; padding:10px 20px;">+</button></div>
+        <hr style="margin:20px 0">
+        <button class="btn-primary-grad" onclick="cerrarConfiguracion()">Cerrar</button>
+    </div>
+</div>
 
+<script type="importmap">
+    { "imports": { "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js", "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js" } }
+</script>
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "firebase/firestore";
@@ -542,8 +243,7 @@
         projectId: "contaflow-22b0e",
         storageBucket: "contaflow-22b0e.firebasestorage.app",
         messagingSenderId: "482658784469",
-        appId: "1:482658784469:web:24667c3581affb1ad1fe5c",
-        measurementId: "G-CTWWH372DE"
+        appId: "1:482658784469:web:24667c3581affb1ad1fe5c"
     };
     
     const app = initializeApp(firebaseConfig);
@@ -551,237 +251,174 @@
     const registrosRef = collection(db, "registros");
     let allData = [];
     let chartInstance = null;
+    let itemsArray = [{ nombre: "", cantidad: 1, precio: 0 }];
     
-    // Elementos DOM
-    const periodoInput = document.getElementById('periodo-mes');
-    const fechaInp = document.getElementById('fecha');
-    const categoriaInp = document.getElementById('categoria');
-    const tipoInp = document.getElementById('tipo');
-    const detalleInp = document.getElementById('detalle');
-    const netoInp = document.getElementById('neto');
-    const ivaInp = document.getElementById('iva');
-    const totalInp = document.getElementById('total');
-    const editIdInp = document.getElementById('edit-id');
-    const btnSubmit = document.getElementById('btn-submit');
-    const formRegistro = document.getElementById('form-registro');
+    // Configuración dinámica
+    let tiposDocumento = ["Factura Venta", "Factura Compra", "Boleta Venta", "Gasto Caja Chica", "Factura Servicio"];
+    let subcategorias = ["producto", "servicio"];
     
-    // Setear fecha actual y período
-    const hoyDate = new Date();
-    fechaInp.valueAsDate = hoyDate;
-    periodoInput.value = `${hoyDate.getFullYear()}-${String(hoyDate.getMonth()+1).padStart(2,'0')}`;
-    
-    // Calcular IVA y Total
-    function calcularImpuestos() {
-        const neto = parseFloat(netoInp.value) || 0;
-        const tipo = tipoInp.value;
-        const esFactura = tipo.includes("Factura");
-        let iva = esFactura ? neto * 0.19 : 0;
-        iva = Math.round(iva);
-        ivaInp.value = iva;
-        totalInp.value = neto + iva;
+    function guardarConfigLocal() { localStorage.setItem("tiposCF", JSON.stringify(tiposDocumento)); localStorage.setItem("subcatCF", JSON.stringify(subcategorias)); }
+    function cargarConfigLocal() {
+        let t = localStorage.getItem("tiposCF"); if(t) tiposDocumento = JSON.parse(t);
+        let s = localStorage.getItem("subcatCF"); if(s) subcategorias = JSON.parse(s);
     }
+    cargarConfigLocal();
+    
+    function actualizarSelectTipos() {
+        const select = document.getElementById('tipo');
+        select.innerHTML = '';
+        tiposDocumento.forEach(t => { let opt = document.createElement('option'); opt.value = t; opt.textContent = t; select.appendChild(opt); });
+    }
+    
+    function agregarItem() { itemsArray.push({ nombre: "", cantidad: 1, precio: 0 }); renderItemsList(); }
+    function eliminarItem(idx) { itemsArray.splice(idx,1); renderItemsList(); calcularTotalesItems(); }
+    function actualizarItem(idx, campo, valor) { itemsArray[idx][campo] = campo === 'cantidad' || campo === 'precio' ? parseFloat(valor) || 0 : valor; calcularTotalesItems(); }
+    
+    function renderItemsList() {
+        const container = document.getElementById('items-list');
+        container.innerHTML = '';
+        itemsArray.forEach((item, idx) => {
+            const div = document.createElement('div'); div.className = 'item-row';
+            div.innerHTML = `<input type="text" placeholder="Item/Producto" value="${item.nombre}" onchange="actualizarItem(${idx},'nombre',this.value)" style="flex:2">
+                            <input type="number" placeholder="Cant" value="${item.cantidad}" onchange="actualizarItem(${idx},'cantidad',this.value)" style="width:70px">
+                            <input type="number" placeholder="Precio" value="${item.precio}" onchange="actualizarItem(${idx},'precio',this.value)" style="width:100px">
+                            <button class="btn-remove-item" onclick="eliminarItem(${idx})">✕</button>`;
+            container.appendChild(div);
+        });
+        if(itemsArray.length === 0) { itemsArray.push({ nombre: "", cantidad: 1, precio: 0 }); renderItemsList(); }
+    }
+    
+    function calcularTotalesItems() {
+        let netoTotal = 0;
+        itemsArray.forEach(item => { netoTotal += (item.cantidad || 0) * (item.precio || 0); });
+        document.getElementById('neto').value = Math.round(netoTotal);
+        const tipo = document.getElementById('tipo').value;
+        const esFactura = tipo.includes("Factura");
+        let iva = esFactura ? Math.round(netoTotal * 0.19) : 0;
+        document.getElementById('iva').value = iva;
+        document.getElementById('total').value = netoTotal + iva;
+    }
+    
+    window.actualizarItem = actualizarItem; window.eliminarItem = eliminarItem; window.agregarItem = agregarItem;
     
     function calcularDesdeTotal() {
-        const total = parseFloat(totalInp.value) || 0;
-        const tipo = tipoInp.value;
+        const total = parseFloat(document.getElementById('total').value) || 0;
+        const tipo = document.getElementById('tipo').value;
         const esFactura = tipo.includes("Factura");
-        if (esFactura && total > 0) {
+        if(esFactura && total > 0) {
             const neto = Math.round(total / 1.19);
-            netoInp.value = neto;
-            ivaInp.value = total - neto;
-        } else {
-            netoInp.value = total;
-            ivaInp.value = 0;
+            document.getElementById('neto').value = neto;
+            document.getElementById('iva').value = total - neto;
         }
     }
     
-    netoInp.addEventListener('input', calcularImpuestos);
-    totalInp.addEventListener('input', calcularDesdeTotal);
-    tipoInp.addEventListener('change', calcularImpuestos);
+    document.getElementById('total').addEventListener('input', calcularDesdeTotal);
+    document.getElementById('tipo').addEventListener('change', () => calcularTotalesItems());
     
-    // Guardar o actualizar registro
+    // Guardar registro
     async function guardarRegistro(e) {
         e.preventDefault();
-        
-        const id = editIdInp.value;
+        const id = document.getElementById('edit-id').value;
+        const items = itemsArray.filter(i => i.nombre.trim() !== "");
+        const descripcionItems = items.map(i => `${i.cantidad}x ${i.nombre} ($${i.precio})`).join(", ");
         const data = {
-            fecha: fechaInp.value,
-            categoria: categoriaInp.value,
-            tipo: tipoInp.value,
-            detalle: detalleInp.value,
-            neto: Number(netoInp.value) || 0,
-            iva: Number(ivaInp.value) || 0,
-            total: Number(totalInp.value) || 0,
+            fecha: document.getElementById('fecha').value,
+            categoria: document.getElementById('categoria').value,
+            tipo: document.getElementById('tipo').value,
+            subcategoria: document.getElementById('subcategoria').value,
+            proveedor: document.getElementById('proveedor').value,
+            detalle: descripcionItems || document.getElementById('detalle')?.value || "Sin detalle",
+            items: items,
+            neto: Number(document.getElementById('neto').value) || 0,
+            iva: Number(document.getElementById('iva').value) || 0,
+            total: Number(document.getElementById('total').value) || 0,
         };
-        
         try {
-            if (id) {
-                await updateDoc(doc(db, "registros", id), data);
-                alert("Registro actualizado correctamente");
-            } else {
-                await addDoc(registrosRef, data);
-                alert("Registro guardado correctamente");
-            }
+            if(id) await updateDoc(doc(db, "registros", id), data);
+            else await addDoc(registrosRef, data);
             limpiarFormulario();
-        } catch(error) { 
-            console.error("Error:", error);
-            alert("Error al guardar: " + error.message);
-        }
+            alert("Registro guardado");
+        } catch(error) { alert("Error: "+error.message); }
     }
     
     function limpiarFormulario() {
-        editIdInp.value = "";
-        btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR REGISTRO';
-        fechaInp.valueAsDate = new Date();
-        detalleInp.value = "";
-        netoInp.value = "0";
-        ivaInp.value = "0";
-        totalInp.value = "0";
-        categoriaInp.value = "negocio";
-        tipoInp.value = "Factura Venta";
-        calcularImpuestos();
+        document.getElementById('edit-id').value = "";
+        document.getElementById('btn-submit').innerHTML = '<i class="fas fa-save"></i> GUARDAR REGISTRO';
+        document.getElementById('fecha').valueAsDate = new Date();
+        document.getElementById('proveedor').value = "";
+        itemsArray = [{ nombre: "", cantidad: 1, precio: 0 }];
+        renderItemsList();
+        calcularTotalesItems();
+        document.getElementById('subcategoria').value = "producto";
     }
     
-    // Funciones globales para editar/eliminar
-    window.eliminarRegistro = async (id) => { 
-        if(confirm("¿Eliminar este movimiento?")) {
-            await deleteDoc(doc(db, "registros", id));
-            alert("Registro eliminado");
-        }
-    };
-    
+    window.eliminarRegistro = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "registros", id)); alert("Eliminado"); };
     window.prepararEdicion = (id) => {
         const item = allData.find(d => d.id === id);
         if(!item) return;
-        editIdInp.value = id;
-        fechaInp.value = item.fecha;
-        detalleInp.value = item.detalle;
-        netoInp.value = item.neto;
-        ivaInp.value = item.iva;
-        totalInp.value = item.total;
-        tipoInp.value = item.tipo;
-        categoriaInp.value = item.categoria || "negocio";
-        btnSubmit.innerHTML = '<i class="fas fa-pen"></i> ACTUALIZAR REGISTRO';
+        document.getElementById('edit-id').value = id;
+        document.getElementById('fecha').value = item.fecha;
+        document.getElementById('proveedor').value = item.proveedor || "";
+        document.getElementById('tipo').value = item.tipo;
+        document.getElementById('categoria').value = item.categoria;
+        document.getElementById('subcategoria').value = item.subcategoria || "producto";
+        if(item.items && item.items.length) { itemsArray = item.items; }
+        else { itemsArray = [{ nombre: item.detalle || "Item", cantidad: 1, precio: item.neto }]; }
+        renderItemsList();
+        document.getElementById('neto').value = item.neto;
+        document.getElementById('iva').value = item.iva;
+        document.getElementById('total').value = item.total;
+        document.getElementById('btn-submit').innerHTML = '<i class="fas fa-pen"></i> ACTUALIZAR REGISTRO';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     
-    formRegistro.addEventListener('submit', guardarRegistro);
+    document.getElementById('form-registro').addEventListener('submit', guardarRegistro);
     
-    // Filtros
-    function getActiveFilters() {
-        let chk = document.querySelectorAll('.chip-pro.active');
-        return Array.from(chk).map(c => c.getAttribute('data-filter'));
-    }
+    function getActiveFilters() { return Array.from(document.querySelectorAll('.chip-pro.active')).map(c => c.getAttribute('data-filter')); }
     
-    // Renderizar todo
     function renderDashboard() {
-        const periodo = periodoInput.value;
+        const periodo = document.getElementById('periodo-mes').value;
         const activeTypes = getActiveFilters();
         const filtered = allData.filter(d => d.fecha && d.fecha.startsWith(periodo) && activeTypes.includes(d.tipo));
         
         let ventasTotal = 0, cajaTotal = 0, ivaPorPagar = 0, ivaCredito = 0;
         filtered.forEach(d => {
-            const total = d.total || 0;
-            if(d.tipo.includes("Venta") || d.tipo === "Boleta Venta") ventasTotal += total;
-            if(d.tipo === "Gasto Caja Chica") cajaTotal += total;
-            if(d.tipo === "Factura Venta") ivaPorPagar += d.iva || 0;
-            if(d.tipo === "Factura Compra") ivaCredito += d.iva || 0;
+            if(d.tipo.includes("Venta") || d.tipo === "Boleta Venta") ventasTotal += d.total;
+            if(d.tipo === "Gasto Caja Chica") cajaTotal += d.total;
+            if(d.tipo === "Factura Venta") ivaPorPagar += d.iva;
+            if(d.tipo === "Factura Compra" || d.tipo === "Factura Servicio") ivaCredito += d.iva;
         });
-        const ivaNeto = ivaPorPagar - ivaCredito;
         document.getElementById('kpi-ventas').innerHTML = `$${ventasTotal.toLocaleString('es-CL')}`;
         document.getElementById('kpi-caja').innerHTML = `$${cajaTotal.toLocaleString('es-CL')}`;
-        document.getElementById('kpi-iva').innerHTML = `$${ivaNeto.toLocaleString('es-CL')}`;
+        document.getElementById('kpi-iva').innerHTML = `$${(ivaPorPagar - ivaCredito).toLocaleString('es-CL')}`;
         
-        // Tabla
         const tbody = document.getElementById('tabla-cuerpo');
         tbody.innerHTML = '';
         filtered.forEach(reg => {
-            const row = tbody.insertRow();
-            row.insertCell(0).innerHTML = reg.fecha.split('-').reverse().join('/');
-            row.insertCell(1).innerHTML = `<span class="badge-tipo">${reg.tipo}</span>`;
-            row.insertCell(2).innerHTML = reg.detalle;
-            row.insertCell(3).innerHTML = `$${Number(reg.neto).toLocaleString('es-CL')}`;
-            row.insertCell(4).innerHTML = `$${Number(reg.iva).toLocaleString('es-CL')}`;
-            row.insertCell(5).innerHTML = `<strong>$${Number(reg.total).toLocaleString('es-CL')}</strong>`;
-            row.insertCell(6).className = "text-right action-icons";
-            row.cells[6].innerHTML = `<i class="fas fa-edit" onclick="prepararEdicion('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i>`;
+            const itemsText = reg.items ? reg.items.map(i => `${i.cantidad}x ${i.nombre}`).join(", ") : (reg.detalle || "");
+            tbody.innerHTML += `<tr>
+                <td>${reg.fecha.split('-').reverse().join('/')}</td>
+                <td><span class="badge-tipo">${reg.tipo}</span></td>
+                <td>${reg.proveedor || '-'}</td>
+                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${itemsText.substring(0,50)}</td>
+                <td>$${Number(reg.neto).toLocaleString('es-CL')}</td>
+                <td>$${Number(reg.iva).toLocaleString('es-CL')}</td>
+                <td><strong>$${Number(reg.total).toLocaleString('es-CL')}</strong></td>
+                <td class="text-right action-icons"><i class="fas fa-edit" onclick="prepararEdicion('${reg.id}')"></i> <i class="fas fa-trash-alt" onclick="eliminarRegistro('${reg.id}')"></i></td>
+            </tr>`;
         });
         
-        // Gráfico
         let ventasChart = 0, comprasChart = 0, cajaChart = 0;
         filtered.forEach(d => {
-            if(d.tipo.includes("Venta") || d.tipo === "Boleta Venta") ventasChart += d.total;
-            if(d.tipo === "Factura Compra") comprasChart += d.total;
+            if(d.tipo.includes("Venta")) ventasChart += d.total;
+            if(d.tipo === "Factura Compra" || d.tipo === "Factura Servicio") comprasChart += d.total;
             if(d.tipo === "Gasto Caja Chica") cajaChart += d.total;
         });
-        
         const ctx = document.getElementById('chartComparativo').getContext('2d');
         if(chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: { 
-                labels: ['📈 Ventas', '📦 Compras', '💵 Caja Chica'], 
-                datasets: [{ 
-                    label: 'Monto CLP', 
-                    data: [ventasChart, comprasChart, cajaChart], 
-                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f97316'], 
-                    borderRadius: 12, 
-                    barPercentage: 0.6 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: true, 
-                plugins: { 
-                    legend: { position: 'top' }, 
-                    tooltip: { callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString('es-CL')}` } } 
-                } 
-            }
-        });
+        chartInstance = new Chart(ctx, { type: 'bar', data: { labels: ['Ventas', 'Compras/Servicios', 'Caja Chica'], datasets: [{ label: 'Monto CLP', data: [ventasChart, comprasChart, cajaChart], backgroundColor: ['#3b82f6', '#8b5cf6', '#f97316'], borderRadius: 12 }] }, options: { responsive: true, plugins: { tooltip: { callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString('es-CL')}` } } } } });
     }
     
-    // Exportar
     window.exportarReporte = (tipo) => {
-        const periodo = periodoInput.value;
-        const datosMes = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
-        if(tipo === 'excel') {
-            const wsData = datosMes.map(d => ({ Fecha: d.fecha, Tipo: d.tipo, Detalle: d.detalle, Neto: d.neto, IVA: d.iva, Total: d.total }));
-            const ws = XLSX.utils.json_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, `ContaFlow_${periodo}`);
-            XLSX.writeFile(wb, `Reporte_ContaFlow_${periodo}.xlsx`);
-            alert("Excel generado correctamente");
-        } else {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape' });
-            doc.setFont('helvetica');
-            doc.setFontSize(16);
-            doc.text(`ContaFlow Pro - Reporte Período ${periodo}`, 14, 18);
-            const tableColumn = ["Fecha", "Tipo", "Detalle", "Neto", "IVA", "Total"];
-            const tableRows = datosMes.map(d => [d.fecha, d.tipo, d.detalle, `$${d.neto}`, `$${d.iva}`, `$${d.total}`]);
-            doc.autoTable({ head: [tableColumn], body: tableRows, startY: 28, theme: 'striped', styles: { fontSize: 8 }, headStyles: { fillColor: [15, 23, 42] } });
-            doc.save(`ContaFlow_${periodo}.pdf`);
-            alert("PDF generado correctamente");
-        }
-    };
-    
-    // Event listeners
-    document.querySelectorAll('.chip-pro').forEach(chip => {
-        chip.addEventListener('click', () => { 
-            chip.classList.toggle('active'); 
-            renderDashboard(); 
-        });
-    });
-    periodoInput.addEventListener('change', () => renderDashboard());
-    
-    // Escuchar cambios en Firebase
-    onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
-        allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderDashboard();
-    });
-    
-    // Inicializar
-    calcularImpuestos();
-</script>
-</body>
-</html>
+        const periodo = document.getElementById('periodo-mes').value;
+        const datosMes = allData.filter(d => d.fecha && d.fecha.st
