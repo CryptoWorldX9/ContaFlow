@@ -588,6 +588,15 @@
         }
         .chip-all:hover { background: rgba(79,142,247,0.15); }
 
+        /* Scroll doble: barra arriba + barra abajo sincronizadas */
+        .table-scroll-top {
+            overflow-x: auto;
+            overflow-y: hidden;
+            border-bottom: 1px solid var(--border);
+        }
+        .table-scroll-top-inner {
+            height: 1px; /* solo activa el scrollbar, sin contenido visible */
+        }
         .table-scroll { overflow-x: auto; padding: 0 0 4px; -webkit-overflow-scrolling: touch; }
         .data-table {
             border-collapse: collapse;
@@ -1100,7 +1109,10 @@
                     </button>
                 </div>
 
-                <div class="table-scroll">
+                <div class="table-scroll-top" id="scroll-top">
+                    <div class="table-scroll-top-inner" id="scroll-top-inner"></div>
+                </div>
+                <div class="table-scroll" id="scroll-bottom">
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -1799,6 +1811,41 @@ onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
 // Init
 renderItems();
 recalcularIvaYTotal();
+
+// ============================================================ — sincroniza barra superior con la tabla
+// ============================================================
+function iniciarScrollSync() {
+    const top    = document.getElementById('scroll-top');
+    const inner  = document.getElementById('scroll-top-inner');
+    const bottom = document.getElementById('scroll-bottom');
+    const table  = bottom.querySelector('.data-table');
+
+    function sincronizarAncho() {
+        inner.style.width = table.scrollWidth + 'px';
+    }
+    sincronizarAncho();
+
+    // Sincronizar posiciones mutuamente sin loop
+    let ignoreTop = false, ignoreBottom = false;
+    top.addEventListener('scroll', () => {
+        if (ignoreTop) { ignoreTop = false; return; }
+        ignoreBottom = true;
+        bottom.scrollLeft = top.scrollLeft;
+    });
+    bottom.addEventListener('scroll', () => {
+        if (ignoreBottom) { ignoreBottom = false; return; }
+        ignoreTop = true;
+        top.scrollLeft = bottom.scrollLeft;
+    });
+
+    // Re-sincronizar ancho si cambia el contenido (nuevos registros)
+    new ResizeObserver(sincronizarAncho).observe(table);
+}
+
+// Iniciar después de que el DOM esté listo
+document.addEventListener('DOMContentLoaded', iniciarScrollSync);
+// Por si acaso ya cargó
+if (document.readyState !== 'loading') iniciarScrollSync();
 </script>
 </body>
 </html>
