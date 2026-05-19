@@ -1397,6 +1397,70 @@ function calcularDesdeTotal() {
 netoInput.addEventListener('input', recalcularIvaYTotal);
 totalInput.addEventListener('input', calcularDesdeTotal);
 tipoSelect.addEventListener('change', recalcularIvaYTotal);
+
+// ============================================================
+// FORMATEADOR RUT CHILENO — aplica puntos y guión en tiempo real
+// ============================================================
+function formatearRut(rut) {
+    // Deja solo dígitos y la letra K
+    let limpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (limpio.length === 0) return '';
+    // Separa dígito verificador
+    const dv     = limpio.slice(-1);
+    let cuerpo   = limpio.slice(0, -1);
+    if (cuerpo.length === 0) return dv; // solo el dv, no agregar guión aún
+    // Agrega puntos cada 3 dígitos desde la derecha
+    cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${cuerpo}-${dv}`;
+}
+
+function validarRut(rut) {
+    const limpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (limpio.length < 2) return null; // muy corto para validar
+    const dv    = limpio.slice(-1);
+    const nums  = limpio.slice(0, -1);
+    if (!/^\d+$/.test(nums)) return false;
+    let suma = 0, mul = 2;
+    for (let i = nums.length - 1; i >= 0; i--) {
+        suma += parseInt(nums[i]) * mul;
+        mul = mul === 7 ? 2 : mul + 1;
+    }
+    const dvCalc = 11 - (suma % 11);
+    const dvEsperado = dvCalc === 11 ? '0' : dvCalc === 10 ? 'K' : String(dvCalc);
+    return dv === dvEsperado;
+}
+
+const rutInput = document.getElementById('proveedor-rut');
+
+rutInput.addEventListener('input', function () {
+    const pos    = this.selectionStart;
+    const antes  = this.value.length;
+    this.value   = formatearRut(this.value);
+    const despues = this.value.length;
+    // Mantener cursor en posición correcta compensando los caracteres agregados
+    this.setSelectionRange(pos + (despues - antes), pos + (despues - antes));
+    // Validación visual
+    const valido = validarRut(this.value);
+    if (valido === null || this.value.length < 3) {
+        this.style.borderColor = '';
+        this.style.boxShadow   = '';
+    } else if (valido) {
+        this.style.borderColor = 'var(--green)';
+        this.style.boxShadow   = '0 0 0 3px rgba(63,185,80,0.12)';
+    } else {
+        this.style.borderColor = 'var(--red)';
+        this.style.boxShadow   = '0 0 0 3px rgba(248,81,73,0.12)';
+    }
+});
+
+rutInput.addEventListener('blur', function () {
+    // Al salir del campo, limpiar estilos si está vacío
+    if (!this.value.trim()) {
+        this.style.borderColor = '';
+        this.style.boxShadow   = '';
+    }
+});
+
 document.getElementById('btn-add-item').addEventListener('click', () => {
     itemsArray.push({ nombre: "", cantidad: 1 });
     renderItems();
@@ -1470,7 +1534,7 @@ window.editarRegistro = (id) => {
     editIdInput.value = id;
     fechaInput.value  = reg.fecha;
     proveedorNombre.value = reg.proveedor    || "";
-    proveedorRut.value    = reg.proveedorRut || "";
+    proveedorRut.value    = reg.proveedorRut ? formatearRut(reg.proveedorRut) : '';
     folioInput.value      = reg.folio        || "";
 
     if (!tiposDocumento.includes(reg.tipo)) {
