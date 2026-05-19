@@ -194,14 +194,14 @@
         /* Column widths */
         .data-table th:nth-child(1)  { width: 8%;  }
         .data-table th:nth-child(2)  { width: 12%; }
-        .data-table th:nth-child(3)  { width: 13%; }
-        .data-table th:nth-child(4)  { width: 10%; }
-        .data-table th:nth-child(5)  { width: 7%;  }
-        .data-table th:nth-child(6)  { width: 22%; }
+        .data-table th:nth-child(3)  { width: 12%; }
+        .data-table th:nth-child(4)  { width: 9%;  }
+        .data-table th:nth-child(5)  { width: 6%;  }
+        .data-table th:nth-child(6)  { width: 20%; }
         .data-table th:nth-child(7)  { width: 9%;  }
         .data-table th:nth-child(8)  { width: 9%;  }
-        .data-table th:nth-child(9)  { width: 7%;  }
-        .data-table th:nth-child(10) { width: 3%;  }
+        .data-table th:nth-child(9)  { width: 8%;  }
+        .data-table th:nth-child(10) { width: 7%;  min-width: 72px; }
 
         .data-table td:nth-child(6) {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0;
@@ -220,8 +220,8 @@
         .badge-tipo.boleta { background: #ecfdf5; color: #065f46; }
 
         .text-right { text-align: right; }
-        .actions-icons { display: flex; gap: 4px; justify-content: flex-end; }
-        .actions-icons i { cursor: pointer; color: #94a3b8; font-size: 0.9rem; padding: 5px; border-radius: 6px; transition: 0.15s; }
+        .actions-icons { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: nowrap; padding-right: 4px; }
+        .actions-icons i { cursor: pointer; color: #94a3b8; font-size: 0.9rem; padding: 6px 7px; border-radius: 6px; transition: 0.15s; flex-shrink: 0; }
         .actions-icons i.fa-edit:hover { color: #3b82f6; background: #eff6ff; }
         .actions-icons i.fa-trash-alt:hover { color: #dc2626; background: #fee2e2; }
 
@@ -421,7 +421,7 @@
                                 <th class="text-right">Neto</th>
                                 <th class="text-right">IVA</th>
                                 <th class="text-right">Total</th>
-                                <th></th>
+                                <th style="text-align:right; padding-right:8px;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-body"></tbody>
