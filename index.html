@@ -187,7 +187,7 @@
             text-align: left;
             white-space: nowrap;
         }
-        .data-table tbody td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
+        .data-table tbody td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; color: #334155; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
         .data-table tbody tr:hover td { background: #f8fafc; }
         .data-table tbody tr:last-child td { border-bottom: none; }
 
@@ -203,8 +203,13 @@
         .data-table th:nth-child(9)  { width: 9%;  }   /* Total */
         .data-table th:nth-child(10) { width: 7%;  min-width: 72px; }  /* Acciones */
 
-        /* La celda de acciones NO corta — necesita mostrar los dos iconos siempre */
-        .data-table td:nth-child(10) { overflow: visible; white-space: nowrap; }
+        /* Columnas que NO deben partir en varias líneas */
+        .data-table td:nth-child(1),
+        .data-table td:nth-child(5),
+        .data-table td:nth-child(7),
+        .data-table td:nth-child(8),
+        .data-table td:nth-child(9),
+        .data-table td:nth-child(10) { white-space: nowrap; overflow: visible; }
 
         .badge-tipo {
             background: #eef2ff; color: #3730a3;
