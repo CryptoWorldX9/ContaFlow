@@ -187,25 +187,24 @@
             text-align: left;
             white-space: nowrap;
         }
-        .data-table tbody td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #334155; }
+        .data-table tbody td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
         .data-table tbody tr:hover td { background: #f8fafc; }
         .data-table tbody tr:last-child td { border-bottom: none; }
 
         /* Column widths */
-        .data-table th:nth-child(1)  { width: 8%;  }
-        .data-table th:nth-child(2)  { width: 12%; }
-        .data-table th:nth-child(3)  { width: 12%; }
-        .data-table th:nth-child(4)  { width: 9%;  }
-        .data-table th:nth-child(5)  { width: 6%;  }
-        .data-table th:nth-child(6)  { width: 20%; }
-        .data-table th:nth-child(7)  { width: 9%;  }
-        .data-table th:nth-child(8)  { width: 9%;  }
-        .data-table th:nth-child(9)  { width: 8%;  }
-        .data-table th:nth-child(10) { width: 7%;  min-width: 72px; }
+        .data-table th:nth-child(1)  { width: 7%;  }   /* Fecha */
+        .data-table th:nth-child(2)  { width: 11%; }   /* Tipo */
+        .data-table th:nth-child(3)  { width: 13%; }   /* Proveedor */
+        .data-table th:nth-child(4)  { width: 10%; }   /* RUT */
+        .data-table th:nth-child(5)  { width: 6%;  }   /* Folio */
+        .data-table th:nth-child(6)  { width: 19%; }   /* Detalle */
+        .data-table th:nth-child(7)  { width: 9%;  }   /* Neto */
+        .data-table th:nth-child(8)  { width: 9%;  }   /* IVA */
+        .data-table th:nth-child(9)  { width: 9%;  }   /* Total */
+        .data-table th:nth-child(10) { width: 7%;  min-width: 72px; }  /* Acciones */
 
-        .data-table td:nth-child(6) {
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0;
-        }
+        /* La celda de acciones NO corta — necesita mostrar los dos iconos siempre */
+        .data-table td:nth-child(10) { overflow: visible; white-space: nowrap; }
 
         .badge-tipo {
             background: #eef2ff; color: #3730a3;
