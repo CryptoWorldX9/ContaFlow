@@ -588,16 +588,27 @@
         }
         .chip-all:hover { background: rgba(79,142,247,0.15); }
 
-        /* Scroll doble: barra arriba + barra abajo sincronizadas */
-        .table-scroll-top {
+        .table-scroll { overflow-x: auto; padding: 0 0 4px; -webkit-overflow-scrolling: touch; }
+
+        /* Barra flotante sticky en el fondo de la pantalla */
+        .scroll-flotante {
+            position: fixed;
+            bottom: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: 14px;
             overflow-x: auto;
             overflow-y: hidden;
-            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+            border-top: 1px solid var(--border2);
+            z-index: 90;
+            display: none; /* oculta por defecto, JS la muestra */
+            -webkit-overflow-scrolling: touch;
         }
-        .table-scroll-top-inner {
-            height: 1px; /* solo activa el scrollbar, sin contenido visible */
+        .scroll-flotante-inner { height: 1px; }
+        @media (max-width: 900px) {
+            .scroll-flotante { left: 0; bottom: 0; }
         }
-        .table-scroll { overflow-x: auto; padding: 0 0 4px; -webkit-overflow-scrolling: touch; }
         .data-table {
             border-collapse: collapse;
             font-size: 0.77rem;
@@ -1109,9 +1120,6 @@
                     </button>
                 </div>
 
-                <div class="table-scroll-top" id="scroll-top">
-                    <div class="table-scroll-top-inner" id="scroll-top-inner"></div>
-                </div>
                 <div class="table-scroll" id="scroll-bottom">
                     <table class="data-table">
                         <thead>
@@ -1167,6 +1175,11 @@
         <div class="modal-divider"></div>
         <button class="btn-close-modal" id="btn-cerrar-config"><i class="fas fa-check" style="margin-right:6px;color:var(--green);"></i>Listo</button>
     </div>
+</div>
+
+<!-- Barra de scroll flotante sticky -->
+<div class="scroll-flotante" id="scroll-flotante">
+    <div class="scroll-flotante-inner" id="scroll-flotante-inner"></div>
 </div>
 
 <script type="importmap">
@@ -1812,40 +1825,59 @@ onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
 renderItems();
 recalcularIvaYTotal();
 
-// ============================================================ — sincroniza barra superior con la tabla
 // ============================================================
-function iniciarScrollSync() {
-    const top    = document.getElementById('scroll-top');
-    const inner  = document.getElementById('scroll-top-inner');
-    const bottom = document.getElementById('scroll-bottom');
-    const table  = bottom.querySelector('.data-table');
+// SCROLL FLOTANTE — acompaña al usuario mientras recorre la tabla
+// ============================================================
+function iniciarScrollFlotante() {
+    const flotante = document.getElementById('scroll-flotante');
+    const inner    = document.getElementById('scroll-flotante-inner');
+    const bottom   = document.getElementById('scroll-bottom');
+    const table    = bottom.querySelector('.data-table');
+    const card     = bottom.closest('.card');
 
+    // Ajusta el ancho del inner para que el scrollbar tenga el tamaño real de la tabla
     function sincronizarAncho() {
         inner.style.width = table.scrollWidth + 'px';
     }
     sincronizarAncho();
+    new ResizeObserver(sincronizarAncho).observe(table);
 
-    // Sincronizar posiciones mutuamente sin loop
-    let ignoreTop = false, ignoreBottom = false;
-    top.addEventListener('scroll', () => {
-        if (ignoreTop) { ignoreTop = false; return; }
-        ignoreBottom = true;
-        bottom.scrollLeft = top.scrollLeft;
+    // Muestra/oculta la barra flotante según si la tabla está en el viewport
+    // y hay contenido que scrollear
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const hayScroll = table.scrollWidth > bottom.clientWidth + 4;
+            flotante.style.display = (entry.isIntersecting && hayScroll) ? 'block' : 'none';
+        });
+    }, { threshold: 0.01 });
+    observer.observe(card);
+
+    // Sincronización sin loop: flotante → tabla y tabla → flotante
+    let lockFlotante = false, lockTabla = false;
+    flotante.addEventListener('scroll', () => {
+        if (lockFlotante) { lockFlotante = false; return; }
+        lockTabla = true;
+        bottom.scrollLeft = flotante.scrollLeft;
     });
     bottom.addEventListener('scroll', () => {
-        if (ignoreBottom) { ignoreBottom = false; return; }
-        ignoreTop = true;
-        top.scrollLeft = bottom.scrollLeft;
+        if (lockTabla) { lockTabla = false; return; }
+        lockFlotante = true;
+        flotante.scrollLeft = bottom.scrollLeft;
     });
 
-    // Re-sincronizar ancho si cambia el contenido (nuevos registros)
-    new ResizeObserver(sincronizarAncho).observe(table);
+    // Actualizar visibilidad si cambia el tamaño de ventana
+    window.addEventListener('resize', () => {
+        sincronizarAncho();
+        const hayScroll = table.scrollWidth > bottom.clientWidth + 4;
+        if (!hayScroll) flotante.style.display = 'none';
+    });
 }
 
-// Iniciar después de que el DOM esté listo
-document.addEventListener('DOMContentLoaded', iniciarScrollSync);
-// Por si acaso ya cargó
-if (document.readyState !== 'loading') iniciarScrollSync();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarScrollFlotante);
+} else {
+    iniciarScrollFlotante();
+}
 </script>
 </body>
 </html>
