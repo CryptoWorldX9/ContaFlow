@@ -588,33 +588,14 @@
         }
         .chip-all:hover { background: rgba(79,142,247,0.15); }
 
-        .table-scroll { overflow-x: auto; padding: 0 0 4px; -webkit-overflow-scrolling: touch; }
+        .table-scroll { overflow-x: hidden; }
 
-        /* Barra flotante sticky en el fondo de la pantalla */
-        .scroll-flotante {
-            position: fixed;
-            bottom: 0;
-            left: var(--sidebar-w);
-            right: 0;
-            height: 14px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            background: var(--surface2);
-            border-top: 1px solid var(--border2);
-            z-index: 90;
-            display: none; /* oculta por defecto, JS la muestra */
-            -webkit-overflow-scrolling: touch;
-        }
-        .scroll-flotante-inner { height: 1px; }
-        @media (max-width: 900px) {
-            .scroll-flotante { left: 0; bottom: 0; }
-        }
+        /* Tabla encasillada: ocupa exactamente el ancho disponible */
         .data-table {
+            width: 100%;
+            table-layout: fixed;   /* respeta los % definidos, no se sale */
             border-collapse: collapse;
-            font-size: 0.77rem;
-            /* tabla crece hacia la derecha, nunca comprime columnas */
-            width: max-content;
-            min-width: 100%;
+            font-size: 0.76rem;
         }
         .data-table thead th {
             background: var(--surface2);
@@ -623,41 +604,48 @@
             text-transform: uppercase;
             font-size: 0.6rem;
             letter-spacing: 0.6px;
-            padding: 10px 16px;
+            padding: 10px 10px;
             border-bottom: 1px solid var(--border);
             text-align: left;
-            white-space: nowrap; /* cabeceras nunca parten */
-            position: sticky;
-            top: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        /* Anchos de columna en % — suman 100% */
+        .data-table th:nth-child(1)  { width: 7%;  }   /* Fecha */
+        .data-table th:nth-child(2)  { width: 12%; }   /* Tipo */
+        .data-table th:nth-child(3)  { width: 14%; }   /* Proveedor — más ancho */
+        .data-table th:nth-child(4)  { width: 9%;  }   /* RUT */
+        .data-table th:nth-child(5)  { width: 5%;  }   /* Folio */
+        .data-table th:nth-child(6)  { width: 17%; }   /* Detalle */
+        .data-table th:nth-child(7)  { width: 9%;  }   /* Neto */
+        .data-table th:nth-child(8)  { width: 9%;  }   /* IVA */
+        .data-table th:nth-child(9)  { width: 10%; }   /* Total */
+        .data-table th:nth-child(10) { width: 8%;  }   /* Acciones */
+
         .data-table tbody td {
-            padding: 11px 16px;
+            padding: 10px 10px;
             border-bottom: 1px solid var(--border);
             color: var(--text2);
             vertical-align: middle;
-            white-space: nowrap; /* TODAS las celdas en una sola línea */
+            /* por defecto: truncar con "…" — ninguna celda rompe el layout */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .data-table tbody tr:last-child td { border-bottom: none; }
-        .data-table tbody tr:hover td {
-            background: var(--surface2);
-            color: var(--text);
+        .data-table tbody tr:hover td { background: var(--surface2); color: var(--text); }
+
+        /* Proveedor (col 3): puede partir en 2 líneas máximo, se adapta al ancho */
+        .data-table td:nth-child(3) {
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.35;
         }
 
-        /* Anchos mínimos por columna — garantizan legibilidad */
-        .data-table th:nth-child(1)  { min-width: 90px;  }  /* Fecha */
-        .data-table th:nth-child(2)  { min-width: 140px; }  /* Tipo */
-        .data-table th:nth-child(3)  { min-width: 150px; }  /* Proveedor */
-        .data-table th:nth-child(4)  { min-width: 120px; }  /* RUT */
-        .data-table th:nth-child(5)  { min-width: 70px;  }  /* Folio */
-        .data-table th:nth-child(6)  { min-width: 200px; }  /* Detalle */
-        .data-table th:nth-child(7)  { min-width: 100px; }  /* Neto */
-        .data-table th:nth-child(8)  { min-width: 100px; }  /* IVA */
-        .data-table th:nth-child(9)  { min-width: 110px; }  /* Total */
-        .data-table th:nth-child(10) { min-width: 80px;  }  /* Acciones */
-
-        /* Detalle: único campo que puede truncar con "…" si es muy largo */
-        .data-table td:nth-child(6) {
-            max-width: 260px;
+        /* RUT (col 4): SIEMPRE en una sola línea, nunca parte */
+        .data-table td:nth-child(4) {
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -1120,7 +1108,7 @@
                     </button>
                 </div>
 
-                <div class="table-scroll" id="scroll-bottom">
+                <div class="table-scroll">
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -1175,11 +1163,6 @@
         <div class="modal-divider"></div>
         <button class="btn-close-modal" id="btn-cerrar-config"><i class="fas fa-check" style="margin-right:6px;color:var(--green);"></i>Listo</button>
     </div>
-</div>
-
-<!-- Barra de scroll flotante sticky -->
-<div class="scroll-flotante" id="scroll-flotante">
-    <div class="scroll-flotante-inner" id="scroll-flotante-inner"></div>
 </div>
 
 <script type="importmap">
@@ -1824,60 +1807,6 @@ onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
 // Init
 renderItems();
 recalcularIvaYTotal();
-
-// ============================================================
-// SCROLL FLOTANTE — acompaña al usuario mientras recorre la tabla
-// ============================================================
-function iniciarScrollFlotante() {
-    const flotante = document.getElementById('scroll-flotante');
-    const inner    = document.getElementById('scroll-flotante-inner');
-    const bottom   = document.getElementById('scroll-bottom');
-    const table    = bottom.querySelector('.data-table');
-    const card     = bottom.closest('.card');
-
-    // Ajusta el ancho del inner para que el scrollbar tenga el tamaño real de la tabla
-    function sincronizarAncho() {
-        inner.style.width = table.scrollWidth + 'px';
-    }
-    sincronizarAncho();
-    new ResizeObserver(sincronizarAncho).observe(table);
-
-    // Muestra/oculta la barra flotante según si la tabla está en el viewport
-    // y hay contenido que scrollear
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const hayScroll = table.scrollWidth > bottom.clientWidth + 4;
-            flotante.style.display = (entry.isIntersecting && hayScroll) ? 'block' : 'none';
-        });
-    }, { threshold: 0.01 });
-    observer.observe(card);
-
-    // Sincronización sin loop: flotante → tabla y tabla → flotante
-    let lockFlotante = false, lockTabla = false;
-    flotante.addEventListener('scroll', () => {
-        if (lockFlotante) { lockFlotante = false; return; }
-        lockTabla = true;
-        bottom.scrollLeft = flotante.scrollLeft;
-    });
-    bottom.addEventListener('scroll', () => {
-        if (lockTabla) { lockTabla = false; return; }
-        lockFlotante = true;
-        flotante.scrollLeft = bottom.scrollLeft;
-    });
-
-    // Actualizar visibilidad si cambia el tamaño de ventana
-    window.addEventListener('resize', () => {
-        sincronizarAncho();
-        const hayScroll = table.scrollWidth > bottom.clientWidth + 4;
-        if (!hayScroll) flotante.style.display = 'none';
-    });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', iniciarScrollFlotante);
-} else {
-    iniciarScrollFlotante();
-}
 </script>
 </body>
 </html>
