@@ -3,461 +3,1157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Conta Pro | Sistema Contable Empresarial</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>ContaPro | Sistema Contable</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2230;
+            --surface3: #212836;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.12);
+            --text: #e6edf3;
+            --text2: #8b949e;
+            --text3: #6e7681;
+            --accent: #4f8ef7;
+            --accent2: #1d6cfc;
+            --accent-glow: rgba(79,142,247,0.15);
+            --green: #3fb950;
+            --orange: #f0883e;
+            --purple: #a371f7;
+            --cyan: #39d0d8;
+            --red: #f85149;
+            --yellow: #e3b341;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --sidebar-w: 260px;
+            --nav-h: 60px;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #1e293b; overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
 
-        .app-container { display: flex; min-height: 100vh; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-        /* ===== SIDEBAR ===== */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+
+        /* ========================
+           LAYOUT
+        ======================== */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========================
+           SIDEBAR
+        ======================== */
         .sidebar {
-            width: 270px;
-            background: #0f172a;
-            color: #e2e8f0;
-            flex-shrink: 0;
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
             height: 100vh;
-            overflow-y: auto;
-            border-right: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            transition: transform 0.3s ease;
         }
-        .brand { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-        .logo { display: flex; align-items: center; gap: 12px; }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 99;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Brand */
+        .brand {
+            padding: 20px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .logo-icon {
-            width: 42px; height: 42px;
-            background: linear-gradient(135deg, #3b82f6, #06b6d4);
-            border-radius: 12px;
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--accent), #1d6cfc);
+            border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 18px; color: white;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+            font-weight: 800; font-size: 15px; color: white;
+            box-shadow: 0 0 16px rgba(79,142,247,0.4);
+            flex-shrink: 0;
         }
-        .logo-text { font-weight: 800; font-size: 1.4rem; color: white; }
-        .logo-text span { color: #38bdf8; }
-        .logo-sub { font-size: 0.65rem; color: #64748b; margin-top: 1px; letter-spacing: 0.5px; }
-
-        .period-box { background: rgba(255,255,255,0.04); margin: 16px; padding: 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.07); }
-        .period-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
-        .month-input { background: #1e293b; border: 1px solid rgba(255,255,255,0.08); color: white; padding: 10px 12px; border-radius: 10px; width: 100%; font-weight: 500; outline: none; font-size: 0.85rem; }
-        .month-input:focus { border-color: #3b82f6; }
-
-        .kpi-stack { margin: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
-        .kpi-card { background: rgba(255,255,255,0.04); border-radius: 14px; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden; }
-        .kpi-card::before { content:''; position: absolute; top:0; left:0; width:3px; height:100%; border-radius: 3px 0 0 3px; }
-        .kpi-card.ventas::before { background: #3b82f6; }
-        .kpi-card.caja::before { background: #f97316; }
-        .kpi-card.iva::before { background: #8b5cf6; }
-        .kpi-title { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 1.4rem; font-weight: 800; margin-top: 4px; color: white; }
-
-        .sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 16px; }
-
-        .actions { margin-top: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 8px; }
-        .btn-side {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 11px 16px;
-            font-weight: 600; font-size: 0.78rem;
-            cursor: pointer; color: #cbd5e1;
-            display: flex; align-items: center; gap: 8px;
-            transition: all 0.15s;
-            letter-spacing: 0.3px;
+        .brand-text { line-height: 1.2; }
+        .brand-name {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: var(--text);
+            letter-spacing: -0.3px;
         }
-        .btn-side:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: white; }
-        .btn-side.pdf:hover { background: rgba(225,29,72,0.2); border-color: #e11d48; color: #fda4af; }
-        .btn-side.excel:hover { background: rgba(5,150,105,0.2); border-color: #059669; color: #6ee7b7; }
-        .btn-side.config { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25); color: #60a5fa; }
-        .btn-side.config:hover { background: rgba(59,130,246,0.2); border-color: #3b82f6; }
+        .brand-name span { color: var(--accent); }
+        .brand-sub { font-size: 0.65rem; color: var(--text3); letter-spacing: 0.5px; font-weight: 500; }
 
-        /* ===== MAIN ===== */
-        .main { flex: 1; padding: 24px 28px; background: #f0f4f8; min-width: 0; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
-        .title h1 { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
-        .title h1 i { color: #3b82f6; margin-right: 6px; }
-        .badge-live { background: white; padding: 7px 16px; border-radius: 40px; font-weight: 500; font-size: 0.8rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); color: #475569; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; }
-        .dot-live { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-
-        /* ===== CARDS ===== */
-        .card { background: white; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid #e8edf3; overflow: hidden; }
-        .card-header { padding: 18px 22px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .card-header h3 { font-weight: 700; font-size: 1rem; color: #0f172a; display: flex; align-items: center; gap: 8px; }
-        .card-header h3 i { color: #3b82f6; }
-
-        /* ===== FORM ===== */
-        .form { padding: 18px 22px 22px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .input-group { }
-        .input-group label { font-size: 0.68rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 5px; letter-spacing: 0.3px; }
-        .input {
-            width: 100%; padding: 10px 13px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            background: #f8fafc;
-            color: #1e293b;
-            transition: border-color 0.15s;
-            font-family: 'Inter', sans-serif;
-        }
-        .input:focus { border-color: #3b82f6; background: white; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        select.input { cursor: pointer; }
-
-        .proveedor-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 14px 0 0; }
-
-        .items-container { background: #f8fafc; border-radius: 14px; padding: 14px; margin: 14px 0; border: 1.5px solid #e2e8f0; }
-        .items-label { font-size: 0.68rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 10px; }
-        .item-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .item-row input { flex: 1; min-width: 0; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.85rem; background: white; font-family: 'Inter', sans-serif; }
-        .item-row input:focus { border-color: #3b82f6; outline: none; }
-        .btn-add { background: #3b82f6; color: white; border: none; padding: 8px 18px; border-radius: 40px; cursor: pointer; font-size: 0.78rem; font-weight: 600; margin-top: 6px; transition: 0.15s; }
-        .btn-add:hover { background: #2563eb; }
-        .btn-remove { background: #fee2e2; color: #dc2626; border: none; width: 30px; height: 30px; border-radius: 30px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; transition: 0.15s; }
-        .btn-remove:hover { background: #dc2626; color: white; }
-
-        .money-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; background: #f8fafc; padding: 14px; border-radius: 14px; margin: 14px 0; border: 1.5px solid #e2e8f0; }
-        .money-row label { font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 5px; letter-spacing: 0.3px; }
-
-        .btn-save {
-            background: linear-gradient(105deg, #1e293b, #334155);
-            border: none; padding: 13px;
-            border-radius: 12px;
-            font-weight: 700; font-size: 0.9rem;
-            color: white; width: 100%;
-            cursor: pointer; transition: 0.15s;
-            letter-spacing: 0.3px;
-        }
-        .btn-save:hover { background: linear-gradient(105deg, #0f172a, #1e293b); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .btn-save:active { transform: scale(0.98); }
-        .btn-save.editing { background: linear-gradient(105deg, #1d4ed8, #2563eb); }
-
-        /* ===== CHART ===== */
-        .chart-container { padding: 18px 22px 22px; height: 270px; }
-
-        /* ===== TABLE SECTION ===== */
-        .fullwidth { grid-column: span 2; }
-
-        .filter-bar { display: flex; gap: 8px; padding: 14px 22px 0; flex-wrap: wrap; }
-        .chip {
-            background: #f1f5f9; border: 1.5px solid #e2e8f0;
-            padding: 6px 14px; border-radius: 40px;
-            font-size: 0.75rem; font-weight: 600;
-            cursor: pointer; transition: 0.15s; color: #64748b;
-        }
-        .chip:hover { border-color: #94a3b8; color: #334155; }
-        .chip.active { background: #0f172a; color: white; border-color: #0f172a; }
-
-        .chip-mostrar-todo {
-            background: #eff6ff; border: 1.5px solid #bfdbfe;
-            padding: 6px 14px; border-radius: 40px;
-            font-size: 0.75rem; font-weight: 600;
-            cursor: pointer; transition: 0.15s; color: #1d4ed8;
-        }
-        .chip-mostrar-todo:hover { background: #dbeafe; }
-
-        .table-wrapper { overflow-x: auto; padding: 14px 22px 22px; }
-        .data-table {
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            font-size: 0.78rem;
-        }
-        .data-table thead th {
-            background: #f8fafc;
-            color: #64748b;
+        /* Period selector */
+        .sidebar-section { padding: 14px 14px 0; }
+        .sidebar-label {
+            font-size: 0.6rem;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.65rem;
-            letter-spacing: 0.5px;
-            padding: 10px 8px;
-            border-bottom: 2px solid #e2e8f0;
+            letter-spacing: 1px;
+            color: var(--text3);
+            padding: 0 4px;
+            margin-bottom: 8px;
+        }
+        .period-input-wrap {
+            position: relative;
+        }
+        .period-input-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 0.78rem;
+            pointer-events: none;
+        }
+        .month-input {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            padding: 9px 12px 9px 34px;
+            border-radius: var(--radius-sm);
+            width: 100%;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .month-input:focus { border-color: var(--accent); }
+
+        /* KPIs */
+        .kpi-stack { display: flex; flex-direction: column; gap: 8px; }
+        .kpi-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kpi-card:hover { border-color: var(--border2); }
+        .kpi-stripe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 3px; height: 100%;
+            border-radius: 3px 0 0 3px;
+        }
+        .kpi-card.ventas .kpi-stripe { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+        .kpi-card.caja .kpi-stripe { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+        .kpi-card.iva .kpi-stripe { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+        .kpi-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .kpi-label i { font-size: 0.65rem; }
+        .kpi-card.ventas .kpi-label i { color: var(--accent); }
+        .kpi-card.caja .kpi-label i { color: var(--orange); }
+        .kpi-card.iva .kpi-label i { color: var(--purple); }
+        .kpi-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: -0.5px;
+        }
+
+        /* Nav actions */
+        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            font-weight: 600;
+            font-size: 0.78rem;
+            cursor: pointer;
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s;
             text-align: left;
-            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+            width: 100%;
         }
-        .data-table tbody td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; color: #334155; white-space: normal; word-break: break-word; overflow-wrap: break-word; }
-        .data-table tbody tr:hover td { background: #f8fafc; }
+        .nav-btn i { width: 16px; text-align: center; font-size: 0.82rem; }
+        .nav-btn:hover { background: var(--surface3); color: var(--text); }
+        .nav-btn.config:hover { color: var(--accent); }
+        .nav-btn.pdf:hover { color: var(--red); }
+        .nav-btn.excel:hover { color: var(--green); }
+
+        .sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+        .sidebar-footer { margin-top: auto; padding: 14px; border-top: 1px solid var(--border); }
+
+        /* ========================
+           TOP MOBILE NAV
+        ======================== */
+        .topbar {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            z-index: 98;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+        }
+        .topbar-brand { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .topbar-brand .logo-icon { width: 32px; height: 32px; font-size: 12px; }
+        .topbar-brand .brand-name { font-size: 1rem; }
+        .menu-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        /* ========================
+           MAIN CONTENT
+        ======================== */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-width: 0;
+            padding: 28px;
+            background: var(--bg);
+        }
+
+        /* Page header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .page-title h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-title h1 i { color: var(--accent); font-size: 1.1rem; }
+        .page-sub { font-size: 0.75rem; color: var(--text3); margin-top: 3px; }
+
+        .badge-live {
+            background: rgba(63,185,80,0.1);
+            border: 1px solid rgba(63,185,80,0.25);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .dot-live {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* ========================
+           GRID
+        ======================== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .span-2 { grid-column: span 2; }
+
+        /* ========================
+           CARDS
+        ======================== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .card-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .card-icon.blue { background: var(--accent-glow); color: var(--accent); }
+        .card-icon.green { background: rgba(63,185,80,0.12); color: var(--green); }
+        .card-icon.purple { background: rgba(163,113,247,0.12); color: var(--purple); }
+        .card-icon.orange { background: rgba(240,136,62,0.12); color: var(--orange); }
+
+        .card-meta { font-size: 0.72rem; color: var(--text3); font-weight: 500; }
+
+        /* ========================
+           FORM
+        ======================== */
+        .form-body { padding: 18px 20px 20px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .form-row-1 { grid-template-columns: 1fr; }
+
+        .field label {
+            display: block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text3);
+            margin-bottom: 5px;
+        }
+        .input {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.83rem;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+        }
+        .input::placeholder { color: var(--text3); }
+        select.input { cursor: pointer; }
+        .input[readonly] { opacity: 0.6; cursor: default; }
+
+        /* Items */
+        .items-wrap {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .items-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .items-label i { color: var(--orange); font-size: 0.65rem; }
+
+        .item-row {
+            display: flex;
+            gap: 7px;
+            margin-bottom: 7px;
+            align-items: center;
+        }
+        .item-row input {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font-size: 0.8rem;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+        }
+        .item-row input:focus { border-color: var(--accent); }
+        .item-row input::placeholder { color: var(--text3); }
+
+        .btn-remove-item {
+            width: 28px; height: 28px;
+            background: rgba(248,81,73,0.1);
+            border: 1px solid rgba(248,81,73,0.2);
+            border-radius: 7px;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-remove-item:hover { background: rgba(248,81,73,0.2); }
+
+        .btn-add-item {
+            background: rgba(79,142,247,0.08);
+            border: 1px dashed rgba(79,142,247,0.3);
+            border-radius: 7px;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 7px 12px;
+            width: 100%;
+            margin-top: 2px;
+            transition: 0.15s;
+            font-family: 'DM Sans', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .btn-add-item:hover { background: rgba(79,142,247,0.15); border-color: var(--accent); }
+
+        /* Money row */
+        .money-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .money-field label {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text3);
+            margin-bottom: 4px;
+        }
+        .money-field .input {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.82rem;
+        }
+        .money-field.total .input {
+            border-color: rgba(79,142,247,0.3);
+            background: rgba(79,142,247,0.04);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Submit */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.2px;
+            box-shadow: 0 4px 14px rgba(79,142,247,0.3);
+        }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,142,247,0.4); }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit.editing {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+        }
+        .btn-cancel {
+            width: 100%;
+            padding: 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.15s;
+            margin-top: 7px;
+            font-family: 'DM Sans', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+        }
+        .btn-cancel:hover { color: var(--text); border-color: var(--border2); }
+
+        /* ========================
+           CHART
+        ======================== */
+        .chart-wrap { padding: 18px 20px 20px; height: 260px; }
+
+        /* ========================
+           TABLE
+        ======================== */
+        .filter-bar {
+            padding: 12px 20px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+        .chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text2);
+            transition: 0.15s;
+            display: flex; align-items: center; gap: 5px;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .chip:hover { border-color: var(--border2); color: var(--text); }
+        .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .chip-all {
+            background: rgba(79,142,247,0.08);
+            border: 1px solid rgba(79,142,247,0.25);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--accent);
+            transition: 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .chip-all:hover { background: rgba(79,142,247,0.15); }
+
+        .table-scroll { overflow-x: auto; padding: 0 0 4px; -webkit-overflow-scrolling: touch; }
+        .data-table {
+            border-collapse: collapse;
+            font-size: 0.77rem;
+            /* tabla crece hacia la derecha, nunca comprime columnas */
+            width: max-content;
+            min-width: 100%;
+        }
+        .data-table thead th {
+            background: var(--surface2);
+            color: var(--text3);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.6rem;
+            letter-spacing: 0.6px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap; /* cabeceras nunca parten */
+            position: sticky;
+            top: 0;
+        }
+        .data-table tbody td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text2);
+            vertical-align: middle;
+            white-space: nowrap; /* TODAS las celdas en una sola línea */
+        }
         .data-table tbody tr:last-child td { border-bottom: none; }
-
-        /* Column widths */
-        .data-table th:nth-child(1)  { width: 7%;  }   /* Fecha */
-        .data-table th:nth-child(2)  { width: 11%; }   /* Tipo */
-        .data-table th:nth-child(3)  { width: 13%; }   /* Proveedor */
-        .data-table th:nth-child(4)  { width: 10%; }   /* RUT */
-        .data-table th:nth-child(5)  { width: 6%;  }   /* Folio */
-        .data-table th:nth-child(6)  { width: 19%; }   /* Detalle */
-        .data-table th:nth-child(7)  { width: 9%;  }   /* Neto */
-        .data-table th:nth-child(8)  { width: 9%;  }   /* IVA */
-        .data-table th:nth-child(9)  { width: 9%;  }   /* Total */
-        .data-table th:nth-child(10) { width: 7%;  min-width: 72px; }  /* Acciones */
-
-        /* Columnas que NO deben partir en varias líneas */
-        .data-table td:nth-child(1),
-        .data-table td:nth-child(5),
-        .data-table td:nth-child(7),
-        .data-table td:nth-child(8),
-        .data-table td:nth-child(9),
-        .data-table td:nth-child(10) { white-space: nowrap; overflow: visible; }
-
-        .badge-tipo {
-            background: #eef2ff; color: #3730a3;
-            padding: 3px 8px; border-radius: 6px;
-            font-size: 0.68rem; font-weight: 700;
-            display: inline-block; white-space: nowrap;
+        .data-table tbody tr:hover td {
+            background: var(--surface2);
+            color: var(--text);
         }
-        .badge-tipo.venta { background: #eff6ff; color: #1d4ed8; }
-        .badge-tipo.compra { background: #f0fdf4; color: #15803d; }
-        .badge-tipo.caja { background: #fff7ed; color: #c2410c; }
-        .badge-tipo.servicio { background: #fdf4ff; color: #7e22ce; }
-        .badge-tipo.boleta { background: #ecfdf5; color: #065f46; }
+
+        /* Anchos mínimos por columna — garantizan legibilidad */
+        .data-table th:nth-child(1)  { min-width: 90px;  }  /* Fecha */
+        .data-table th:nth-child(2)  { min-width: 140px; }  /* Tipo */
+        .data-table th:nth-child(3)  { min-width: 150px; }  /* Proveedor */
+        .data-table th:nth-child(4)  { min-width: 120px; }  /* RUT */
+        .data-table th:nth-child(5)  { min-width: 70px;  }  /* Folio */
+        .data-table th:nth-child(6)  { min-width: 200px; }  /* Detalle */
+        .data-table th:nth-child(7)  { min-width: 100px; }  /* Neto */
+        .data-table th:nth-child(8)  { min-width: 100px; }  /* IVA */
+        .data-table th:nth-child(9)  { min-width: 110px; }  /* Total */
+        .data-table th:nth-child(10) { min-width: 80px;  }  /* Acciones */
+
+        /* Detalle: único campo que puede truncar con "…" si es muy largo */
+        .data-table td:nth-child(6) {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .text-right { text-align: right; }
-        .actions-icons { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: nowrap; padding-right: 4px; }
-        .actions-icons i { cursor: pointer; color: #94a3b8; font-size: 0.9rem; padding: 6px 7px; border-radius: 6px; transition: 0.15s; flex-shrink: 0; }
-        .actions-icons i.fa-edit:hover { color: #3b82f6; background: #eff6ff; }
-        .actions-icons i.fa-trash-alt:hover { color: #dc2626; background: #fee2e2; }
+        .text-mono { font-family: 'DM Mono', monospace; font-size: 0.75rem; }
+        .td-iva { color: var(--purple); }
+        .td-total { color: var(--green); font-weight: 700; }
 
-        .empty-state { text-align: center; padding: 48px 20px; color: #94a3b8; }
-        .empty-state i { font-size: 2.5rem; margin-bottom: 12px; display: block; opacity: 0.4; }
-
-        /* ===== MODAL ===== */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .modal.open { display: flex; }
-        .modal-content { background: white; border-radius: 20px; max-width: 480px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h3 { font-weight: 700; font-size: 1.1rem; color: #0f172a; }
-        .close-modal { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 32px; font-size: 18px; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; }
-        .close-modal:hover { background: #e2e8f0; }
-        .modal-section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; margin: 16px 0 10px; }
-        .config-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; background: #f8fafc; margin-bottom: 6px; border: 1px solid #e2e8f0; }
-        .config-item span { font-size: 0.88rem; color: #334155; }
-        .config-item button { background: #fee2e2; color: #dc2626; border: none; padding: 4px 12px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.15s; }
-        .config-item button:hover { background: #dc2626; color: white; }
-        .add-config { display: flex; gap: 8px; margin-top: 10px; }
-        .add-config input { flex: 1; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.88rem; font-family: 'Inter', sans-serif; }
-        .add-config input:focus { border-color: #3b82f6; outline: none; }
-        .modal-divider { height: 1px; background: #f1f5f9; margin: 20px 0; }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1024px) {
-            .app-container { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding-bottom: 12px; }
-            .brand { flex: 1; padding: 16px; margin: 0; border: none; }
-            .period-box { width: auto; min-width: 160px; margin: 8px; padding: 12px; }
-            .kpi-stack { flex-direction: row; overflow-x: auto; margin: 8px; gap: 8px; }
-            .kpi-card { min-width: 130px; }
-            .kpi-value { font-size: 1.1rem; }
-            .actions { flex-direction: row; margin: 8px; padding: 0; }
-            .btn-side { padding: 8px 14px; }
-            .main { padding: 14px; }
-            .grid { grid-template-columns: 1fr; gap: 14px; }
-            .fullwidth { grid-column: span 1; }
-            .form-grid { grid-template-columns: 1fr; }
-            .money-row { grid-template-columns: 1fr; }
-            .proveedor-row { grid-template-columns: 1fr; }
-            .data-table { table-layout: auto; min-width: 650px; }
+        /* Badges */
+        .badge {
+            padding: 3px 9px;
+            border-radius: 5px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
         }
-        @media (max-width: 480px) {
-            .kpi-card { min-width: 110px; }
-            .kpi-value { font-size: 0.95rem; }
-            .main { padding: 10px; }
+        .badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+        .badge.venta { background: rgba(79,142,247,0.12); color: var(--accent); }
+        .badge.venta .badge-dot { background: var(--accent); }
+        .badge.compra { background: rgba(63,185,80,0.1); color: var(--green); }
+        .badge.compra .badge-dot { background: var(--green); }
+        .badge.caja { background: rgba(240,136,62,0.1); color: var(--orange); }
+        .badge.caja .badge-dot { background: var(--orange); }
+        .badge.servicio { background: rgba(163,113,247,0.1); color: var(--purple); }
+        .badge.servicio .badge-dot { background: var(--purple); }
+        .badge.boleta { background: rgba(57,208,216,0.1); color: var(--cyan); }
+        .badge.boleta .badge-dot { background: var(--cyan); }
+        .badge.default { background: var(--surface2); color: var(--text2); }
+        .badge.default .badge-dot { background: var(--text3); }
+
+        /* Action icons */
+        .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+        .row-btn {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem;
+            transition: 0.15s;
+            background: transparent;
+            color: var(--text3);
+        }
+        .row-btn.edit:hover { background: rgba(79,142,247,0.15); color: var(--accent); }
+        .row-btn.del:hover { background: rgba(248,81,73,0.15); color: var(--red); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 52px 20px;
+            color: var(--text3);
+        }
+        .empty-icon {
+            width: 52px; height: 52px;
+            background: var(--surface2);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            margin: 0 auto 14px;
+            color: var(--text3);
+        }
+        .empty-state h4 { font-size: 0.9rem; color: var(--text2); margin-bottom: 5px; }
+        .empty-state p { font-size: 0.78rem; }
+
+        /* Table header info */
+        .table-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px 0;
+        }
+        .record-count { font-size: 0.72rem; color: var(--text3); }
+
+        /* ========================
+           MODAL
+        ======================== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal.open { display: flex; }
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 18px;
+            max-width: 460px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+        }
+        .modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-title i { color: var(--accent); }
+        .modal-close {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text2);
+            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.15s;
+        }
+        .modal-close:hover { color: var(--text); background: var(--surface3); }
+
+        .modal-section-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text3);
+            margin: 16px 0 8px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 5px;
+        }
+        .config-item span { font-size: 0.82rem; color: var(--text); }
+        .config-del {
+            background: rgba(248,81,73,0.1);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--red);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .config-del:hover { background: rgba(248,81,73,0.2); }
+
+        .add-config {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .add-config .input { flex: 1; }
+        .btn-add-config {
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            padding: 9px 16px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .btn-add-config:hover { background: var(--accent2); }
+
+        .modal-divider { height: 1px; background: var(--border); margin: 18px 0; }
+        .btn-close-modal {
+            width: 100%;
+            padding: 11px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .btn-close-modal:hover { color: var(--text); border-color: var(--border2); }
+
+        /* ========================
+           TOAST
+        ======================== */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            padding: 11px 18px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            transform: translateY(8px);
+            max-width: 300px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.success { border-color: rgba(63,185,80,0.3); }
+        #toast.error { border-color: rgba(248,81,73,0.3); }
+
+        /* ========================
+           RESPONSIVE
+        ======================== */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .topbar { display: flex; }
+            .main { margin-left: 0; padding: 80px 14px 24px; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .span-2 { grid-column: span 1; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr 1fr; }
+            .money-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .data-table { min-width: 640px; }
+            .table-scroll { padding: 0; }
+        }
+        @media (max-width: 520px) {
+            .main { padding: 72px 10px 20px; }
+            .form-row-3 { grid-template-columns: 1fr; }
+            .money-grid { grid-template-columns: 1fr; }
+            .kpi-value { font-size: 1.05rem; }
         }
     </style>
 </head>
 <body>
-<div class="app-container">
-    <aside class="sidebar">
+
+<!-- Topbar mobile -->
+<header class="topbar" id="topbar">
+    <button class="menu-btn" id="btn-menu"><i class="fas fa-bars"></i></button>
+    <div class="topbar-brand">
+        <div class="logo-icon">CP</div>
+        <span class="brand-name">Conta<span>Pro</span></span>
+    </div>
+    <div class="dot-live" style="margin-left:auto;"></div>
+</header>
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="overlay"></div>
+
+<div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Brand -->
         <div class="brand">
-            <div class="logo">
-                <div class="logo-icon">CP</div>
-                <div>
-                    <div class="logo-text">Conta<span>Pro</span></div>
-                    <div class="logo-sub">Sistema Contable Empresarial</div>
+            <div class="logo-icon">CP</div>
+            <div class="brand-text">
+                <div class="brand-name">Conta<span>Pro</span></div>
+                <div class="brand-sub">Sistema Contable Empresarial</div>
+            </div>
+        </div>
+
+        <!-- Period -->
+        <div class="sidebar-section" style="margin-top:14px;">
+            <div class="sidebar-label"><i class="fas fa-calendar" style="color:var(--accent);margin-right:4px;"></i>Período Contable</div>
+            <div class="period-input-wrap">
+                <i class="fas fa-calendar-check"></i>
+                <input type="month" id="periodo" class="month-input">
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="sidebar-section" style="margin-top:16px; flex:1;">
+            <div class="sidebar-label"><i class="fas fa-chart-line" style="color:var(--accent);margin-right:4px;"></i>Resumen del Período</div>
+            <div class="kpi-stack">
+                <div class="kpi-card ventas">
+                    <div class="kpi-stripe"></div>
+                    <div class="kpi-label"><i class="fas fa-arrow-trend-up"></i>Ventas Netas</div>
+                    <div class="kpi-value" id="kpi-ventas">$0</div>
+                </div>
+                <div class="kpi-card caja">
+                    <div class="kpi-stripe"></div>
+                    <div class="kpi-label"><i class="fas fa-coins"></i>Caja Chica</div>
+                    <div class="kpi-value" id="kpi-caja">$0</div>
+                </div>
+                <div class="kpi-card iva">
+                    <div class="kpi-stripe"></div>
+                    <div class="kpi-label"><i class="fas fa-percent"></i>IVA a Pagar</div>
+                    <div class="kpi-value" id="kpi-iva">$0</div>
                 </div>
             </div>
         </div>
-        <div class="period-box">
-            <div class="period-label"><i class="fas fa-calendar-alt"></i> &nbsp;Período Contable</div>
-            <input type="month" id="periodo" class="month-input">
-        </div>
-        <div class="kpi-stack">
-            <div class="kpi-card ventas">
-                <div class="kpi-title"><i class="fas fa-arrow-trend-up"></i> &nbsp;Ventas Netas</div>
-                <div class="kpi-value" id="kpi-ventas">$0</div>
+
+        <!-- Nav actions -->
+        <div class="sidebar-footer">
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-nav">
+                <button class="nav-btn config" id="btn-abrir-config">
+                    <i class="fas fa-sliders"></i> Configuración
+                </button>
+                <button class="nav-btn pdf" id="btn-export-pdf">
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </button>
+                <button class="nav-btn excel" id="btn-export-excel">
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
             </div>
-            <div class="kpi-card caja">
-                <div class="kpi-title"><i class="fas fa-coins"></i> &nbsp;Caja Chica</div>
-                <div class="kpi-value" id="kpi-caja">$0</div>
-            </div>
-            <div class="kpi-card iva">
-                <div class="kpi-title"><i class="fas fa-percent"></i> &nbsp;IVA a Pagar</div>
-                <div class="kpi-value" id="kpi-iva">$0</div>
-            </div>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="actions">
-            <button class="btn-side config" id="btn-abrir-config"><i class="fas fa-cog"></i> Configuración</button>
-            <button class="btn-side pdf" id="btn-export-pdf"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-            <button class="btn-side excel" id="btn-export-excel"><i class="fas fa-file-excel"></i> Exportar Excel</button>
         </div>
     </aside>
 
+    <!-- MAIN -->
     <main class="main">
-        <div class="header">
-            <div class="title">
+
+        <!-- Page header -->
+        <div class="page-header">
+            <div class="page-title">
                 <h1><i class="fas fa-chart-pie"></i> Dashboard Ejecutivo</h1>
+                <div class="page-sub">Gestión contable en tiempo real · Firestore</div>
             </div>
             <div class="badge-live">
                 <div class="dot-live"></div>
-                Tiempo Real
+                Sincronizado
             </div>
         </div>
 
-        <div class="grid">
+        <!-- Grid 2 cols -->
+        <div class="grid-2">
+
             <!-- FORMULARIO -->
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-plus-circle"></i> Registrar Movimiento</h3>
+                    <div class="card-title">
+                        <div class="card-icon blue"><i class="fas fa-plus"></i></div>
+                        Registrar Movimiento
+                    </div>
                 </div>
-                <form id="form-registro" class="form">
-                    <input type="hidden" id="edit-id">
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label>Fecha</label>
-                            <input type="date" id="fecha" class="input" required>
+                <div class="form-body">
+                    <form id="form-registro">
+                        <input type="hidden" id="edit-id">
+
+                        <div class="form-row">
+                            <div class="field">
+                                <label><i class="fas fa-calendar-day" style="margin-right:4px;color:var(--accent);"></i>Fecha</label>
+                                <input type="date" id="fecha" class="input" required>
+                            </div>
+                            <div class="field">
+                                <label><i class="fas fa-layer-group" style="margin-right:4px;color:var(--cyan);"></i>Categoría</label>
+                                <select id="categoria" class="input" required>
+                                    <option value="negocio">Libro Compra/Venta</option>
+                                    <option value="cajachica">Caja Chica</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Categoría</label>
-                            <select id="categoria" class="input" required>
-                                <option value="negocio">Libro Compra/Venta</option>
-                                <option value="cajachica">Caja Chica</option>
-                            </select>
+
+                        <div class="form-row">
+                            <div class="field">
+                                <label><i class="fas fa-file-invoice" style="margin-right:4px;color:var(--purple);"></i>Tipo Documento</label>
+                                <select id="tipo" class="input" required></select>
+                            </div>
+                            <div class="field">
+                                <label><i class="fas fa-tag" style="margin-right:4px;color:var(--yellow);"></i>Subcategoría</label>
+                                <select id="subcategoria" class="input"></select>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Tipo Documento</label>
-                            <select id="tipo" class="input" required></select>
+
+                        <div class="form-row form-row-3">
+                            <div class="field">
+                                <label><i class="fas fa-building" style="margin-right:4px;color:var(--green);"></i>Proveedor / Cliente</label>
+                                <input type="text" id="proveedor-nombre" class="input" placeholder="Nombre o Razón Social">
+                            </div>
+                            <div class="field">
+                                <label><i class="fas fa-id-card" style="margin-right:4px;color:var(--orange);"></i>RUT / DNI</label>
+                                <input type="text" id="proveedor-rut" class="input" placeholder="76.xxx.xxx-x">
+                            </div>
+                            <div class="field">
+                                <label><i class="fas fa-hashtag" style="margin-right:4px;color:var(--text3);"></i>Folio</label>
+                                <input type="text" id="folio" class="input" placeholder="Nº">
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Subcategoría</label>
-                            <select id="subcategoria" class="input"></select>
+
+                        <!-- Items -->
+                        <div class="items-wrap">
+                            <div class="items-header">
+                                <div class="items-label"><i class="fas fa-boxes-stacked"></i>Items / Conceptos</div>
+                            </div>
+                            <div id="items-list"></div>
+                            <button type="button" class="btn-add-item" id="btn-add-item">
+                                <i class="fas fa-plus"></i> Agregar Item
+                            </button>
                         </div>
-                    </div>
-                    <div class="proveedor-row">
-                        <div class="input-group">
-                            <label>Proveedor / Cliente</label>
-                            <input type="text" id="proveedor-nombre" class="input" placeholder="Nombre o Razón Social">
+
+                        <!-- Money -->
+                        <div class="money-grid">
+                            <div class="money-field">
+                                <label><i class="fas fa-dollar-sign" style="margin-right:4px;color:var(--text3);"></i>Neto $</label>
+                                <input type="number" id="neto" class="input" placeholder="0" value="0">
+                            </div>
+                            <div class="money-field">
+                                <label><i class="fas fa-percent" style="margin-right:4px;color:var(--purple);"></i>IVA $</label>
+                                <input type="number" id="iva" class="input" readonly value="0">
+                            </div>
+                            <div class="money-field total">
+                                <label><i class="fas fa-sigma" style="margin-right:4px;color:var(--accent);"></i>Total $</label>
+                                <input type="number" id="total" class="input" placeholder="0" value="0">
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>RUT / DNI</label>
-                            <input type="text" id="proveedor-rut" class="input" placeholder="RUT">
-                        </div>
-                        <div class="input-group">
-                            <label>Folio</label>
-                            <input type="text" id="folio" class="input" placeholder="Nº Folio">
-                        </div>
-                    </div>
-                    <div class="items-container">
-                        <div class="items-label">📦 Items / Conceptos</div>
-                        <div id="items-list"></div>
-                        <button type="button" class="btn-add" id="btn-add-item">+ Agregar Item</button>
-                    </div>
-                    <div class="money-row">
-                        <div>
-                            <label>Neto $</label>
-                            <input type="number" id="neto" class="input" placeholder="0" value="0">
-                        </div>
-                        <div>
-                            <label>IVA $</label>
-                            <input type="number" id="iva" class="input" readonly value="0">
-                        </div>
-                        <div>
-                            <label>Total $</label>
-                            <input type="number" id="total" class="input" placeholder="0" value="0">
-                        </div>
-                    </div>
-                    <button type="submit" id="btn-submit" class="btn-save"><i class="fas fa-save"></i> &nbsp;GUARDAR REGISTRO</button>
-                    <button type="button" id="btn-cancelar" class="btn-save" style="background: #f1f5f9; color: #64748b; margin-top: 8px; display: none;">Cancelar Edición</button>
-                </form>
+
+                        <button type="submit" id="btn-submit" class="btn-submit">
+                            <i class="fas fa-floppy-disk"></i> Guardar Registro
+                        </button>
+                        <button type="button" id="btn-cancelar" class="btn-cancel" style="display:none;">
+                            <i class="fas fa-xmark"></i> Cancelar Edición
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- GRÁFICO -->
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-chart-bar"></i> Comparativa Mensual</h3>
+                    <div class="card-title">
+                        <div class="card-icon purple"><i class="fas fa-chart-bar"></i></div>
+                        Comparativa Mensual
+                    </div>
+                    <div class="card-meta">por categoría</div>
                 </div>
-                <div class="chart-container">
+                <div class="chart-wrap">
                     <canvas id="grafico"></canvas>
                 </div>
             </div>
 
-            <!-- TABLA -->
-            <div class="card fullwidth">
+            <!-- TABLA full width -->
+            <div class="card span-2">
                 <div class="card-header">
-                    <h3><i class="fas fa-table-list"></i> Libro Mayor</h3>
-                    <span id="total-registros" style="font-size:0.78rem; color:#64748b; font-weight:500;"></span>
+                    <div class="card-title">
+                        <div class="card-icon green"><i class="fas fa-table-list"></i></div>
+                        Libro Mayor
+                    </div>
+                    <span class="card-meta record-count" id="total-registros"></span>
                 </div>
+
                 <div class="filter-bar" id="filter-bar">
-                    <!-- Los chips se generan dinámicamente -->
-                    <button class="chip-mostrar-todo" id="btn-mostrar-todo">Mostrar todos</button>
+                    <button class="chip-all" id="btn-mostrar-todo">
+                        <i class="fas fa-list"></i> Todos
+                    </button>
                 </div>
-                <div class="table-wrapper">
+
+                <div class="table-scroll">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Proveedor</th>
+                                <th><i class="fas fa-calendar" style="margin-right:5px;"></i>Fecha</th>
+                                <th><i class="fas fa-file" style="margin-right:5px;"></i>Tipo</th>
+                                <th><i class="fas fa-building" style="margin-right:5px;"></i>Proveedor</th>
                                 <th>RUT</th>
                                 <th>Folio</th>
                                 <th>Detalle Items</th>
                                 <th class="text-right">Neto</th>
                                 <th class="text-right">IVA</th>
                                 <th class="text-right">Total</th>
-                                <th style="text-align:right; padding-right:8px;">Acciones</th>
+                                <th class="text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-body"></tbody>
                     </table>
                 </div>
             </div>
+
         </div>
     </main>
 </div>
 
+<!-- TOAST -->
+<div id="toast"></div>
+
 <!-- MODAL CONFIG -->
 <div id="modal-config" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-sliders-h"></i> &nbsp;Configuración</h3>
-            <button class="close-modal" id="cerrar-modal">&times;</button>
+    <div class="modal-box">
+        <div class="modal-head">
+            <div class="modal-title"><i class="fas fa-sliders"></i> Configuración</div>
+            <button class="modal-close" id="cerrar-modal"><i class="fas fa-xmark"></i></button>
         </div>
-        <div class="modal-section-title">Tipos de Documentos</div>
+
+        <div class="modal-section-label">Tipos de Documentos</div>
         <div id="tipos-list"></div>
         <div class="add-config">
-            <input type="text" id="new-tipo" placeholder="Ej: Nota de Crédito">
-            <button id="btn-add-tipo" class="btn-add">+ Agregar</button>
+            <input type="text" id="new-tipo" class="input" placeholder="Ej: Nota de Crédito">
+            <button id="btn-add-tipo" class="btn-add-config"><i class="fas fa-plus"></i> Agregar</button>
         </div>
+
         <div class="modal-divider"></div>
-        <div class="modal-section-title">Subcategorías</div>
+
+        <div class="modal-section-label">Subcategorías</div>
         <div id="subcat-list"></div>
         <div class="add-config">
-            <input type="text" id="new-subcat" placeholder="Ej: Honorarios">
-            <button id="btn-add-subcat" class="btn-add">+ Agregar</button>
+            <input type="text" id="new-subcat" class="input" placeholder="Ej: Honorarios">
+            <button id="btn-add-subcat" class="btn-add-config"><i class="fas fa-plus"></i> Agregar</button>
         </div>
+
         <div class="modal-divider"></div>
-        <button class="btn-save" id="btn-cerrar-config">Cerrar</button>
+        <button class="btn-close-modal" id="btn-cerrar-config"><i class="fas fa-check" style="margin-right:6px;color:var(--green);"></i>Listo</button>
     </div>
 </div>
 
@@ -492,14 +1188,24 @@ let chart = null;
 let itemsArray = [{ nombre: "", cantidad: 1 }];
 
 // ============================================================
-// CONFIGURACIÓN (tipos y subcategorías)
+// MOBILE SIDEBAR
+// ============================================================
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+document.getElementById('btn-menu').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+});
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+});
+
+// ============================================================
+// CONFIGURACIÓN
 // ============================================================
 let tiposDocumento = [
-    "Factura Venta",
-    "Boleta Venta",
-    "Factura Compra",
-    "Gasto Caja Chica",
-    "Factura Servicio"
+    "Factura Venta","Boleta Venta","Factura Compra","Gasto Caja Chica","Factura Servicio"
 ];
 let subcategorias = ["Producto/Mercancía", "Servicio"];
 
@@ -547,34 +1253,27 @@ actualizarSelectTipos();
 actualizarSubcategorias();
 
 // ============================================================
-// CHIPS DE FILTRO — se generan desde tiposDocumento
+// CHIPS DE FILTRO
 // ============================================================
-// Todos los tipos activos por defecto (Set mutable)
 let filtrosActivos = new Set(tiposDocumento);
 
 function renderChips() {
     const bar = document.getElementById('filter-bar');
-    // Eliminar chips anteriores (dejar el btn mostrar-todo)
-    const oldChips = bar.querySelectorAll('.chip');
-    oldChips.forEach(c => c.remove());
-
-    // Insertar chips al inicio
+    bar.querySelectorAll('.chip').forEach(c => c.remove());
     const btnMostrar = document.getElementById('btn-mostrar-todo');
     tiposDocumento.forEach(tipo => {
         const chip = document.createElement('button');
         chip.className = 'chip' + (filtrosActivos.has(tipo) ? ' active' : '');
         chip.dataset.filter = tipo;
-
-        // Icono por tipo
         const icons = {
-            "Factura Venta": "📈",
-            "Boleta Venta": "🧾",
-            "Factura Compra": "📦",
-            "Gasto Caja Chica": "💵",
-            "Factura Servicio": "🔧"
+            "Factura Venta": "fa-arrow-trend-up",
+            "Boleta Venta": "fa-receipt",
+            "Factura Compra": "fa-box",
+            "Gasto Caja Chica": "fa-coins",
+            "Factura Servicio": "fa-wrench"
         };
-        chip.textContent = (icons[tipo] || "📄") + " " + tipo;
-
+        const icon = icons[tipo] || "fa-file";
+        chip.innerHTML = `<i class="fas ${icon}"></i> ${tipo}`;
         chip.addEventListener('click', () => {
             if (filtrosActivos.has(tipo)) {
                 filtrosActivos.delete(tipo);
@@ -598,23 +1297,22 @@ document.getElementById('btn-mostrar-todo').addEventListener('click', () => {
 renderChips();
 
 // ============================================================
-// ELEMENTOS DEL FORMULARIO
+// FORM ELEMENTS
 // ============================================================
-const periodoInput  = document.getElementById('periodo');
-const fechaInput    = document.getElementById('fecha');
+const periodoInput    = document.getElementById('periodo');
+const fechaInput      = document.getElementById('fecha');
 const proveedorNombre = document.getElementById('proveedor-nombre');
-const proveedorRut  = document.getElementById('proveedor-rut');
-const folioInput    = document.getElementById('folio');
-const netoInput     = document.getElementById('neto');
-const ivaInput      = document.getElementById('iva');
-const totalInput    = document.getElementById('total');
-const editIdInput   = document.getElementById('edit-id');
-const btnSubmit     = document.getElementById('btn-submit');
-const btnCancelar   = document.getElementById('btn-cancelar');
-const form          = document.getElementById('form-registro');
-const tipoSelect    = document.getElementById('tipo');
+const proveedorRut    = document.getElementById('proveedor-rut');
+const folioInput      = document.getElementById('folio');
+const netoInput       = document.getElementById('neto');
+const ivaInput        = document.getElementById('iva');
+const totalInput      = document.getElementById('total');
+const editIdInput     = document.getElementById('edit-id');
+const btnSubmit       = document.getElementById('btn-submit');
+const btnCancelar     = document.getElementById('btn-cancelar');
+const form            = document.getElementById('form-registro');
+const tipoSelect      = document.getElementById('tipo');
 
-// Fecha y período por defecto
 const hoy = new Date();
 fechaInput.valueAsDate = hoy;
 periodoInput.value = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
@@ -633,12 +1331,14 @@ function renderItems() {
             <input type="text" placeholder="Producto / Servicio"
                 value="${item.nombre.replace(/"/g,'&quot;')}"
                 data-idx="${idx}" data-field="nombre"
-                class="item-nombre" style="flex:2; min-width:0;">
-            <input type="number" placeholder="Cantidad"
+                class="item-nombre" style="flex:2;min-width:0;">
+            <input type="number" placeholder="Cant."
                 value="${item.cantidad}"
                 data-idx="${idx}" data-field="cantidad"
-                class="item-cant" style="width:90px;">
-            <button type="button" class="btn-remove" data-idx="${idx}">✕</button>
+                class="item-cant" style="width:72px;">
+            <button type="button" class="btn-remove-item" data-idx="${idx}">
+                <i class="fas fa-xmark"></i>
+            </button>
         `;
         container.appendChild(div);
     });
@@ -652,7 +1352,7 @@ function renderItems() {
             itemsArray[parseInt(e.target.dataset.idx)].cantidad = parseFloat(e.target.value) || 0;
         });
     });
-    container.querySelectorAll('.btn-remove').forEach(btn => {
+    container.querySelectorAll('.btn-remove-item').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx);
             itemsArray.splice(idx, 1);
@@ -721,20 +1421,20 @@ async function guardar(e) {
     try {
         if (id) {
             await updateDoc(doc(db, "registros", id), data);
-            mostrarToast("✅ Registro actualizado");
+            mostrarToast("✅ Registro actualizado", "success");
         } else {
             await addDoc(registrosRef, data);
-            mostrarToast("✅ Registro guardado");
+            mostrarToast("✅ Registro guardado", "success");
         }
         limpiarForm();
     } catch(error) {
-        mostrarToast("❌ Error: " + error.message, true);
+        mostrarToast("❌ Error: " + error.message, "error");
     }
 }
 
 function limpiarForm() {
     editIdInput.value = "";
-    btnSubmit.innerHTML = '<i class="fas fa-save"></i> &nbsp;GUARDAR REGISTRO';
+    btnSubmit.innerHTML = '<i class="fas fa-floppy-disk"></i> Guardar Registro';
     btnSubmit.classList.remove('editing');
     btnCancelar.style.display = 'none';
     fechaInput.valueAsDate = new Date();
@@ -765,14 +1465,12 @@ window.editarRegistro = (id) => {
     proveedorRut.value    = reg.proveedorRut || "";
     folioInput.value      = reg.folio        || "";
 
-    // Asegurar que el tipo exista en el select
     if (!tiposDocumento.includes(reg.tipo)) {
         tiposDocumento.push(reg.tipo);
         actualizarSelectTipos();
         renderChips();
     }
     tipoSelect.value = reg.tipo;
-
     document.getElementById('categoria').value = reg.categoria || "negocio";
     document.getElementById('subcategoria').value = reg.subcategoria || subcategorias[0] || "";
 
@@ -785,9 +1483,9 @@ window.editarRegistro = (id) => {
     netoInput.value  = reg.neto;
     ivaInput.value   = reg.iva;
     totalInput.value = reg.total;
-    btnSubmit.innerHTML = '<i class="fas fa-pen"></i> &nbsp;ACTUALIZAR REGISTRO';
+    btnSubmit.innerHTML = '<i class="fas fa-pen"></i> Actualizar Registro';
     btnSubmit.classList.add('editing');
-    btnCancelar.style.display = 'block';
+    btnCancelar.style.display = 'flex';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -795,9 +1493,9 @@ window.eliminarRegistro = async (id) => {
     if (confirm("¿Eliminar este movimiento? Esta acción no se puede deshacer.")) {
         try {
             await deleteDoc(doc(db, "registros", id));
-            mostrarToast("🗑️ Registro eliminado");
+            mostrarToast("🗑️ Registro eliminado", "success");
         } catch(err) {
-            mostrarToast("❌ Error al eliminar", true);
+            mostrarToast("❌ Error al eliminar", "error");
         }
     }
 };
@@ -807,20 +1505,12 @@ window.eliminarRegistro = async (id) => {
 // ============================================================
 function renderDashboard() {
     const periodo  = periodoInput.value;
-
-    // *** CORRECCIÓN PRINCIPAL ***
-    // Mostrar TODOS los registros del período si no hay chips activos,
-    // o filtrar solo por los tipos que tengan chip activo.
     const filtrados = allData.filter(d => {
         if (!d.fecha || !d.fecha.startsWith(periodo)) return false;
-        // Si no hay filtros activos, mostrar todo
         if (filtrosActivos.size === 0) return true;
-        // Mostrar si el tipo está en los filtros activos
-        // (incluyendo tipos personalizados que no tienen chip)
         return filtrosActivos.has(d.tipo) || !tiposDocumento.includes(d.tipo);
     });
 
-    // KPIs
     let ventas = 0, caja = 0, ivaDebito = 0, ivaCredito = 0;
     filtrados.forEach(d => {
         const tipo = (d.tipo || "").toLowerCase();
@@ -833,8 +1523,6 @@ function renderDashboard() {
     document.getElementById('kpi-ventas').textContent = `$${ventas.toLocaleString('es-CL')}`;
     document.getElementById('kpi-caja').textContent   = `$${caja.toLocaleString('es-CL')}`;
     document.getElementById('kpi-iva').textContent    = `$${(ivaDebito - ivaCredito).toLocaleString('es-CL')}`;
-
-    // Actualizar contador
     document.getElementById('total-registros').textContent =
         filtrados.length > 0 ? `${filtrados.length} registro${filtrados.length !== 1 ? 's' : ''}` : '';
 
@@ -846,7 +1534,12 @@ function renderDashboard() {
         const tr = tbody.insertRow();
         const td = tr.insertCell(0);
         td.colSpan = 10;
-        td.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>No hay registros para este período</div>`;
+        td.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                <h4>Sin registros</h4>
+                <p>No hay movimientos para este período</p>
+            </div>`;
     } else {
         filtrados.forEach(reg => {
             const itemsText = reg.items
@@ -854,9 +1547,8 @@ function renderDashboard() {
                 : (reg.detalle || "");
             const fechaStr = reg.fecha ? reg.fecha.split('-').reverse().join('/') : '-';
 
-            // Badge color por tipo
             const tipoLow = (reg.tipo || "").toLowerCase();
-            let badgeClass = "";
+            let badgeClass = "default";
             if (tipoLow.includes("venta")) badgeClass = "venta";
             else if (tipoLow.includes("compra")) badgeClass = "compra";
             else if (tipoLow.includes("caja")) badgeClass = "caja";
@@ -865,32 +1557,36 @@ function renderDashboard() {
 
             const row = tbody.insertRow();
             row.innerHTML = `
-                <td>${fechaStr}</td>
-                <td><span class="badge-tipo ${badgeClass}">${reg.tipo || '-'}</span></td>
+                <td class="text-mono">${fechaStr}</td>
+                <td><span class="badge ${badgeClass}"><span class="badge-dot"></span>${reg.tipo || '-'}</span></td>
                 <td>${reg.proveedor || '-'}</td>
-                <td>${reg.proveedorRut || '-'}</td>
-                <td>${reg.folio || '-'}</td>
-                <td title="${itemsText}">${itemsText.length > 40 ? itemsText.substring(0,40)+"…" : itemsText}</td>
-                <td class="text-right">$${Number(reg.neto || 0).toLocaleString('es-CL')}</td>
-                <td class="text-right">$${Number(reg.iva  || 0).toLocaleString('es-CL')}</td>
-                <td class="text-right"><strong>$${Number(reg.total || 0).toLocaleString('es-CL')}</strong></td>
+                <td class="text-mono">${reg.proveedorRut || '-'}</td>
+                <td class="text-mono">${reg.folio || '-'}</td>
+                <td title="${itemsText}">${itemsText.length > 45 ? itemsText.substring(0,45)+"\u2026" : itemsText}</td>
+                <td class="text-right text-mono">$${Number(reg.neto || 0).toLocaleString('es-CL')}</td>
+                <td class="text-right text-mono td-iva">$${Number(reg.iva  || 0).toLocaleString('es-CL')}</td>
+                <td class="text-right text-mono td-total">$${Number(reg.total || 0).toLocaleString('es-CL')}</td>
                 <td>
-                    <div class="actions-icons">
-                        <i class="fas fa-edit" title="Editar" onclick="editarRegistro('${reg.id}')"></i>
-                        <i class="fas fa-trash-alt" title="Eliminar" onclick="eliminarRegistro('${reg.id}')"></i>
+                    <div class="row-actions">
+                        <button class="row-btn edit" title="Editar" onclick="editarRegistro('${reg.id}')">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="row-btn del" title="Eliminar" onclick="eliminarRegistro('${reg.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             `;
         });
     }
 
-    // Gráfico
+    // Chart
     let ventasChart = 0, comprasChart = 0, cajaChart = 0, serviciosChart = 0;
     filtrados.forEach(d => {
         const tipoLow = (d.tipo || "").toLowerCase();
         if (tipoLow.includes("venta") || tipoLow.includes("boleta")) ventasChart  += (d.total || 0);
-        else if (tipoLow.includes("compra"))  comprasChart   += (d.total || 0);
-        else if (tipoLow.includes("caja"))    cajaChart      += (d.total || 0);
+        else if (tipoLow.includes("compra"))   comprasChart   += (d.total || 0);
+        else if (tipoLow.includes("caja"))     cajaChart      += (d.total || 0);
         else if (tipoLow.includes("servicio")) serviciosChart += (d.total || 0);
     });
 
@@ -899,12 +1595,14 @@ function renderDashboard() {
     chart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Ventas/Boletas', 'Compras', 'Servicios', 'Caja Chica'],
+            labels: ['Ventas', 'Compras', 'Servicios', 'Caja Chica'],
             datasets: [{
                 label: 'Monto CLP',
                 data: [ventasChart, comprasChart, serviciosChart, cajaChart],
-                backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#f97316'],
-                borderRadius: 10,
+                backgroundColor: ['rgba(79,142,247,0.7)', 'rgba(63,185,80,0.7)', 'rgba(57,208,216,0.7)', 'rgba(240,136,62,0.7)'],
+                borderColor: ['#4f8ef7', '#3fb950', '#39d0d8', '#f0883e'],
+                borderWidth: 1,
+                borderRadius: 8,
                 borderSkipped: false,
             }]
         },
@@ -914,17 +1612,26 @@ function renderDashboard() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    backgroundColor: '#1c2230',
+                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    titleColor: '#8b949e',
+                    bodyColor: '#e6edf3',
                     callbacks: {
                         label: ctx => ` $${ctx.raw.toLocaleString('es-CL')}`
                     }
                 }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#6e7681', font: { size: 11, family: 'DM Sans' } }
+                },
                 y: {
-                    grid: { color: '#f1f5f9' },
+                    grid: { color: 'rgba(255,255,255,0.04)' },
                     ticks: {
-                        font: { size: 10 },
+                        color: '#6e7681',
+                        font: { size: 10, family: 'DM Mono' },
                         callback: v => `$${(v/1000).toFixed(0)}K`
                     }
                 }
@@ -941,7 +1648,7 @@ periodoInput.addEventListener('change', renderDashboard);
 window.exportarPDF = () => {
     const periodo = periodoInput.value;
     const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
-    if (datos.length === 0) { mostrarToast("No hay datos para exportar", true); return; }
+    if (datos.length === 0) { mostrarToast("No hay datos para exportar", "error"); return; }
     const { jsPDF } = window.jspdf;
     const docPDF = new jsPDF({ orientation: 'landscape' });
     docPDF.setFontSize(16);
@@ -956,13 +1663,13 @@ window.exportarPDF = () => {
     ]);
     docPDF.autoTable({ head:[cols], body:rows, startY:28, styles:{fontSize:7}, headStyles:{fillColor:[15,23,42]} });
     docPDF.save(`ContaPro_${periodo}.pdf`);
-    mostrarToast("📄 PDF generado");
+    mostrarToast("📄 PDF generado", "success");
 };
 
 window.exportarExcel = () => {
     const periodo = periodoInput.value;
     const datos = allData.filter(d => d.fecha && d.fecha.startsWith(periodo));
-    if (datos.length === 0) { mostrarToast("No hay datos para exportar", true); return; }
+    if (datos.length === 0) { mostrarToast("No hay datos para exportar", "error"); return; }
     const wsData = datos.map(d => ({
         Fecha: d.fecha, Tipo: d.tipo, Proveedor: d.proveedor,
         RUT: d.proveedorRut, Folio: d.folio, Detalle: d.detalle,
@@ -972,7 +1679,7 @@ window.exportarExcel = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `Reporte_${periodo}`);
     XLSX.writeFile(wb, `ContaPro_${periodo}.xlsx`);
-    mostrarToast("📊 Excel generado");
+    mostrarToast("📊 Excel generado", "success");
 };
 
 document.getElementById('btn-export-pdf').addEventListener('click', () => window.exportarPDF());
@@ -995,7 +1702,7 @@ function renderizarConfigModal() {
     tiposDocumento.forEach((t, idx) => {
         const div = document.createElement('div');
         div.className = 'config-item';
-        div.innerHTML = `<span>${t}</span><button onclick="eliminarTipo(${idx})">Eliminar</button>`;
+        div.innerHTML = `<span>${t}</span><button class="config-del" onclick="eliminarTipo(${idx})"><i class="fas fa-trash" style="margin-right:4px;"></i>Eliminar</button>`;
         tiposDiv.appendChild(div);
     });
     const subcatDiv = document.getElementById('subcat-list');
@@ -1003,7 +1710,7 @@ function renderizarConfigModal() {
     subcategorias.forEach((s, idx) => {
         const div = document.createElement('div');
         div.className = 'config-item';
-        div.innerHTML = `<span>${s}</span><button onclick="eliminarSubcat(${idx})">Eliminar</button>`;
+        div.innerHTML = `<span>${s}</span><button class="config-del" onclick="eliminarSubcat(${idx})"><i class="fas fa-trash" style="margin-right:4px;"></i>Eliminar</button>`;
         subcatDiv.appendChild(div);
     });
 }
@@ -1055,38 +1762,23 @@ document.getElementById('new-tipo').addEventListener('keydown', e => { if (e.key
 document.getElementById('new-subcat').addEventListener('keydown', e => { if (e.key==='Enter') window.agregarSubcat(); });
 
 // ============================================================
-// TOAST NOTIFICATION
+// TOAST
 // ============================================================
-function mostrarToast(msg, error = false) {
-    let t = document.getElementById('toast');
-    if (!t) {
-        t = document.createElement('div');
-        t.id = 'toast';
-        t.style.cssText = `
-            position:fixed; bottom:28px; right:28px; z-index:9999;
-            background:#0f172a; color:white;
-            padding:12px 20px; border-radius:12px;
-            font-size:0.88rem; font-weight:600;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            transition: opacity 0.3s;
-            max-width: 300px;
-        `;
-        document.body.appendChild(t);
-    }
-    t.style.background = error ? '#dc2626' : '#0f172a';
+function mostrarToast(msg, tipo = "success") {
+    const t = document.getElementById('toast');
+    t.className = tipo;
     t.textContent = msg;
-    t.style.opacity = '1';
+    t.classList.add('show');
     clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+    t._timer = setTimeout(() => { t.classList.remove('show'); }, 3200);
 }
 
 // ============================================================
-// FIRESTORE — escucha en tiempo real
+// FIRESTORE — tiempo real
 // ============================================================
 onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
     allData = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 
-    // Si hay tipos en la BD que no están en la lista, agregarlos
     const tiposEnBD = [...new Set(allData.map(d => d.tipo).filter(Boolean))];
     let huboNuevos = false;
     tiposEnBD.forEach(t => {
@@ -1101,7 +1793,6 @@ onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
         actualizarSelectTipos();
         renderChips();
     }
-
     renderDashboard();
 });
 
