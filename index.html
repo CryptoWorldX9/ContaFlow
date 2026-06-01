@@ -458,15 +458,15 @@
                     <div class="money-row">
                         <div>
                             <label>Neto $</label>
-                            <input type="number" id="neto" class="input" placeholder="0" value="0">
+                            <input type="text" id="neto" class="input" placeholder="0" value="0">
                         </div>
                         <div>
                             <label>IVA $</label>
-                            <input type="number" id="iva" class="input" readonly value="0">
+                            <input type="text" id="iva" class="input" readonly value="0">
                         </div>
                         <div>
                             <label>Total $</label>
-                            <input type="number" id="total" class="input" placeholder="0" value="0">
+                            <input type="text" id="total" class="input" placeholder="0" value="0">
                         </div>
                     </div>
                     <button type="submit" id="btn-submit" class="btn-save"><i class="fas fa-save"></i> &nbsp;GUARDAR REGISTRO</button>
@@ -738,32 +738,21 @@ periodoMobileInput.addEventListener('change', (e) => {
 });
 
 // ============================================================
-// FORMATO AUTOMÁTICO DE RUT CHILENO - VERSIÓN MEJORADA
+// FORMATO AUTOMÁTICO DE RUT CHILENO
 // ============================================================
 function formatRUT(rut) {
-    // Eliminar todo lo que no sea dígito o 'k'
     let value = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-    
     if (value.length === 0) return '';
-    
-    // Separar cuerpo y dígito verificador (último carácter)
     let dv = value.slice(-1);
     let body = value.slice(0, -1);
-    
-    // Agregar puntos al cuerpo cada 3 dígitos (de derecha a izquierda)
     body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    
-    // Retornar formato final: XXX.XXX.XXX-X
     return body + '-' + dv;
 }
 
-// Permitir solo números y K mientras escribe (sin formato para evitar saltos de cursor)
 proveedorRut.addEventListener('input', (e) => {
-    // Solo permitir dígitos y K/k, eliminar cualquier otro carácter inmediatamente
     e.target.value = e.target.value.replace(/[^0-9kK]/g, '').toUpperCase();
 });
 
-// Aplicar formato completo con puntos y guión al perder el foco
 proveedorRut.addEventListener('blur', (e) => {
     const rut = e.target.value.trim();
     if (rut && rut.length >= 2) {
@@ -772,39 +761,80 @@ proveedorRut.addEventListener('blur', (e) => {
 });
 
 // ============================================================
+// FORMATO DE MILES PARA NETO, IVA Y TOTAL
+// ============================================================
+function formatMoney(num) {
+    if (num === 0 || num === null || num === undefined) return '0';
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function parseMoney(str) {
+    if (!str) return 0;
+    return parseInt(str.replace(/\./g, '').replace(/[^0-9-]/g, '')) || 0;
+}
+
+function applyMoneyFormat(input) {
+    const rawValue = parseMoney(input.value);
+    input.value = formatMoney(rawValue);
+}
+
+// Event listeners para formato de miles en Neto y Total
+netoInput.addEventListener('input', () => {
+    applyMoneyFormat(netoInput);
+    recalcularIvaYTotal();
+});
+
+totalInput.addEventListener('input', () => {
+    applyMoneyFormat(totalInput);
+    calcularDesdeTotal();
+});
+
+// Al hacer foco en Neto o Total, quitar formato para facilitar edición
+netoInput.addEventListener('focus', (e) => {
+    e.target.value = parseMoney(e.target.value) || '';
+});
+
+totalInput.addEventListener('focus', (e) => {
+    e.target.value = parseMoney(e.target.value) || '';
+});
+
+// Al salir de Neto o Total, volver a aplicar formato
+netoInput.addEventListener('blur', (e) => {
+    applyMoneyFormat(e.target);
+});
+
+totalInput.addEventListener('blur', (e) => {
+    applyMoneyFormat(e.target);
+});
+
+// ============================================================
 // LÓGICA ROUTER DE TRÁNSITO PARA TABS MÓVILES
 // ============================================================
 window.switchMobileTab = function(tabId, btnElement) {
-    // 1. Quitar la clase active-tab de todos los contenedores candidatos
     const targetIds = ['tab-registro', 'tab-grafico', 'tab-tabla'];
     targetIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('active-tab');
     });
 
-    // 2. Activar la pestaña solicitada
     const targetCard = document.getElementById(tabId);
     if (targetCard) {
         targetCard.classList.add('active-tab');
     }
 
-    // 3. Actualizar la clase activa del botón en la barra de navegación inferior
     const navItems = document.querySelectorAll('.mobile-nav-bar .mobile-nav-item');
     navItems.forEach(item => item.classList.remove('active'));
     if (btnElement) {
         btnElement.classList.add('active');
     }
 
-    // 4. Si el gráfico se activa en móvil, recalcular el tamaño para evitar bugs de renderizado en canvas de Chart.js
     if (tabId === 'tab-grafico' && chart) {
         chart.resize();
     }
     
-    // Forzar scroll natural al inicio de la pestaña elegida
     window.scrollTo({ top: 0, behavior: 'instant' });
 };
 
-// Control menú flotante de exportación móvil
 window.toggleMobileExportMenu = function() {
     const menu = document.getElementById('mobile-export-menu');
     if (menu) {
@@ -812,7 +842,6 @@ window.toggleMobileExportMenu = function() {
     }
 };
 
-// Cerrar el menú flotante si el usuario hace clic fuera de él
 document.addEventListener('click', (e) => {
     const menu = document.getElementById('mobile-export-menu');
     const trigger = document.querySelector('.export-trigger');
@@ -821,7 +850,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Enlazar gatillo móvil de configuración
 document.getElementById('btn-config-mobile').addEventListener('click', () => {
     if (typeof abrirConfig === 'function') abrirConfig();
 });
@@ -870,39 +898,34 @@ function renderItems() {
 }
 
 // ============================================================
-// CÁLCULO IVA - CORREGIDO PARA BOLETAS Y FACTURAS
+// CÁLCULO IVA
 // ============================================================
 function recalcularIvaYTotal() {
-    const neto = parseFloat(netoInput.value) || 0;
+    const neto = parseMoney(netoInput.value);
     const tipo = tipoSelect.value.toLowerCase();
-    
-    // ✅ CORRECCIÓN: Tanto Facturas COMO Boletas generan IVA (19% en Chile)
     const generaIVA = tipo.includes("factura") || tipo.includes("boleta");
     
     const iva = generaIVA ? Math.round(neto * 0.19) : 0;
-    ivaInput.value = iva;
-    totalInput.value = neto + iva;
+    ivaInput.value = formatMoney(iva);
+    totalInput.value = formatMoney(neto + iva);
 }
 
 function calcularDesdeTotal() {
-    const total = parseFloat(totalInput.value) || 0;
+    const total = parseMoney(totalInput.value);
     const tipo = tipoSelect.value.toLowerCase();
-    
-    // ✅ CORRECCIÓN: Tanto Facturas COMO Boletas generan IVA
     const generaIVA = tipo.includes("factura") || tipo.includes("boleta");
     
     if (generaIVA && total > 0) {
         const neto = Math.round(total / 1.19);
-        netoInput.value = neto;
-        ivaInput.value = total - neto;
+        const iva = total - neto;
+        netoInput.value = formatMoney(neto);
+        ivaInput.value = formatMoney(iva);
     } else {
-        netoInput.value = total;
-        ivaInput.value = 0;
+        netoInput.value = formatMoney(total);
+        ivaInput.value = '0';
     }
 }
 
-netoInput.addEventListener('input', recalcularIvaYTotal);
-totalInput.addEventListener('input', calcularDesdeTotal);
 tipoSelect.addEventListener('change', recalcularIvaYTotal);
 document.getElementById('btn-add-item').addEventListener('click', () => {
     itemsArray.push({ nombre: "", cantidad: 1 });
@@ -928,9 +951,9 @@ async function guardar(e) {
         folio:        folioInput.value.trim(),
         detalle:      descripcionItems || "Sin detalle",
         items:        itemsValidos,
-        neto:         Number(netoInput.value)  || 0,
-        iva:          Number(ivaInput.value)   || 0,
-        total:        Number(totalInput.value) || 0,
+        neto:         parseMoney(netoInput.value),
+        iva:          parseMoney(ivaInput.value),
+        total:        parseMoney(totalInput.value),
     };
 
     try {
@@ -943,7 +966,6 @@ async function guardar(e) {
         }
         limpiarForm();
         
-        // En móviles, redirigir automáticamente al historial tras guardar para ver el resultado
         if (window.innerWidth < 1023) {
             const histBtn = document.querySelector('.mobile-nav-bar button[onclick*="tab-tabla"]');
             switchMobileTab('tab-tabla', histBtn);
@@ -1002,14 +1024,13 @@ window.editarRegistro = (id) => {
         itemsArray = [{ nombre: reg.detalle || "Item", cantidad: 1 }];
     }
     renderItems();
-    netoInput.value  = reg.neto;
-    ivaInput.value   = reg.iva;
-    totalInput.value = reg.total;
+    netoInput.value  = formatMoney(reg.neto);
+    ivaInput.value   = formatMoney(reg.iva);
+    totalInput.value = formatMoney(reg.total);
     btnSubmit.innerHTML = '<i class="fas fa-pen"></i> &nbsp;ACTUALIZAR REGISTRO';
     btnSubmit.classList.add('editing');
     btnCancelar.style.display = 'block';
     
-    // Si está en móvil, conmutar vista automáticamente a la pestaña de Formulario
     if (window.innerWidth < 1023) {
         const regBtn = document.querySelector('.mobile-nav-bar button[onclick*="tab-registro"]');
         switchMobileTab('tab-registro', regBtn);
@@ -1030,7 +1051,7 @@ window.eliminarRegistro = async (id) => {
 };
 
 // ============================================================
-// DASHBOARD (PROCESAMIENTO DE DATOS Y RENDERIZADO DUAL)
+// DASHBOARD
 // ============================================================
 function renderDashboard() {
     const periodo = periodoInput.value;
@@ -1041,47 +1062,26 @@ function renderDashboard() {
         return filtrosActivos.has(d.tipo) || !tiposDocumento.includes(d.tipo);
     });
 
-    // === KPIs - CÁLCULO CORREGIDO ===
+    // KPIs
     let ventas = 0, caja = 0, ivaDebito = 0, ivaCredito = 0;
     filtrados.forEach(d => {
         const tipo = (d.tipo || "").toLowerCase().trim();
-        
-        // Ventas Netas: incluye facturas y boletas de venta
-        if (tipo.includes("venta") || tipo.includes("boleta")) {
-            ventas += (d.neto || 0);
-        }
-        
-        // Caja Chica
-        if (tipo.includes("caja chica")) {
-            caja += (d.total || 0);
-        }
-        
-        // IVA Débito (por pagar): Facturas y Boletas de Venta generan IVA por pagar
-        if (tipo.includes("factura venta") || tipo.includes("boleta venta")) {
-            ivaDebito += (d.iva || 0);
-        }
-        
-        // IVA Crédito (recuperable): Compras y servicios generan IVA a favor
-        if (tipo.includes("factura compra") || tipo.includes("factura servicio")) {
-            ivaCredito += (d.iva || 0);
-        }
+        if (tipo.includes("venta") || tipo.includes("boleta")) ventas += (d.neto || 0);
+        if (tipo.includes("caja chica")) caja += (d.total || 0);
+        if (tipo.includes("factura venta") || tipo.includes("boleta venta")) ivaDebito += (d.iva || 0);
+        if (tipo.includes("factura compra") || tipo.includes("factura servicio")) ivaCredito += (d.iva || 0);
     });
 
-    // Actualizar KPIs con formato correcto
     document.getElementById('kpi-ventas').textContent = `$${ventas.toLocaleString('es-CL')}`;
     document.getElementById('kpi-caja').textContent   = `$${caja.toLocaleString('es-CL')}`;
-    // IVA a Pagar = Débito - Crédito (puede ser negativo si hay más compras)
     const ivaPagar = ivaDebito - ivaCredito;
     document.getElementById('kpi-iva').textContent    = `$${ivaPagar.toLocaleString('es-CL')}`;
 
     document.getElementById('total-registros').textContent =
         filtrados.length > 0 ? `${filtrados.length} registro${filtrados.length !== 1 ? 's' : ''}` : '';
 
-    // --- RENDER MODO 1: TABLA ESCRITORIO ---
     const tbody = document.getElementById('tabla-body');
     tbody.innerHTML = '';
-
-    // --- RENDER MODO 2: TARJETAS RESPONSIVE MÓVIL ---
     const cardsContainer = document.getElementById('tabla-cards-mobile');
     cardsContainer.innerHTML = '';
 
@@ -1090,7 +1090,6 @@ function renderDashboard() {
         const td = tr.insertCell(0);
         td.colSpan = 10;
         td.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>No hay registros para este período</div>`;
-        
         cardsContainer.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>No hay registros para este período</div>`;
     } else {
         filtrados.forEach(reg => {
@@ -1107,7 +1106,6 @@ function renderDashboard() {
             else if (tipoLow.includes("servicio")) badgeClass = "servicio";
             else if (tipoLow.includes("boleta")) badgeClass = "boleta";
 
-            // Inyectar en tabla PC
             const row = tbody.insertRow();
             row.innerHTML = `
                 <td>${fechaStr}</td>
@@ -1127,7 +1125,6 @@ function renderDashboard() {
                 </td>
             `;
 
-            // Construir e inyectar tarjeta móvil dedicada
             const mCard = document.createElement('div');
             mCard.className = 'mobile-data-card';
             mCard.innerHTML = `
@@ -1222,7 +1219,6 @@ function renderDashboard() {
     });
 }
 
-// Vincular recarga al modificar período
 periodoInput.addEventListener('change', renderDashboard);
 
 // ============================================================
@@ -1364,7 +1360,6 @@ function mostrarToast(msg, error = false) {
         document.body.appendChild(t);
     }
     
-    // Ajuste de posición dinámica para móviles (evita superposición sobre barra inferior)
     if(window.innerWidth < 1023) {
         t.style.bottom = '84px';
         t.style.right = '16px';
@@ -1408,7 +1403,7 @@ onSnapshot(query(registrosRef, orderBy("fecha", "desc")), (snapshot) => {
     renderDashboard();
 });
 
-// Inicialización de items y cálculos
+// Inicialización
 renderItems();
 recalcularIvaYTotal();
 </script>
