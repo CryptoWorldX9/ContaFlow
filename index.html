@@ -738,7 +738,7 @@ periodoMobileInput.addEventListener('change', (e) => {
 });
 
 // ============================================================
-// FORMATO AUTOMÁTICO DE RUT CHILENO (XX.XXX.XXX-X)
+// FORMATO AUTOMÁTICO DE RUT CHILENO - VERSIÓN MEJORADA
 // ============================================================
 function formatRUT(rut) {
     // Eliminar todo lo que no sea dígito o 'k'
@@ -746,38 +746,27 @@ function formatRUT(rut) {
     
     if (value.length === 0) return '';
     
-    // Separar cuerpo y dígito verificador
-    let dv = '';
-    if (value.length >= 2) {
-        dv = value.slice(-1);
-        value = value.slice(0, -1);
-    }
+    // Separar cuerpo y dígito verificador (último carácter)
+    let dv = value.slice(-1);
+    let body = value.slice(0, -1);
     
-    // Agregar puntos al cuerpo
-    let body = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    // Agregar puntos al cuerpo cada 3 dígitos (de derecha a izquierda)
+    body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     
-    // Retornar formato final
-    return dv ? `${body}-${dv}` : body;
+    // Retornar formato final: XXX.XXX.XXX-X
+    return body + '-' + dv;
 }
 
-// Aplicar formato mientras el usuario escribe
+// Permitir solo números y K mientras escribe (sin formato para evitar saltos de cursor)
 proveedorRut.addEventListener('input', (e) => {
-    const cursorPos = e.target.selectionStart;
-    const oldValue = e.target.value;
-    const newValue = formatRUT(oldValue);
-    
-    e.target.value = newValue;
-    
-    // Ajustar posición del cursor (opcional, mejora UX)
-    setTimeout(() => {
-        e.target.setSelectionRange(cursorPos, cursorPos);
-    }, 0);
+    // Solo permitir dígitos y K/k, eliminar cualquier otro carácter inmediatamente
+    e.target.value = e.target.value.replace(/[^0-9kK]/g, '').toUpperCase();
 });
 
-// Validar RUT al perder el foco
+// Aplicar formato completo con puntos y guión al perder el foco
 proveedorRut.addEventListener('blur', (e) => {
-    const rut = e.target.value.replace(/[^0-9kK]/g, '');
-    if (rut.length >= 2) {
+    const rut = e.target.value.trim();
+    if (rut && rut.length >= 2) {
         e.target.value = formatRUT(rut);
     }
 });
@@ -881,20 +870,28 @@ function renderItems() {
 }
 
 // ============================================================
-// CÁLCULO IVA
+// CÁLCULO IVA - CORREGIDO PARA BOLETAS Y FACTURAS
 // ============================================================
 function recalcularIvaYTotal() {
     const neto = parseFloat(netoInput.value) || 0;
-    const esFactura = tipoSelect.value.toLowerCase().includes("factura");
-    const iva = esFactura ? Math.round(neto * 0.19) : 0;
+    const tipo = tipoSelect.value.toLowerCase();
+    
+    // ✅ CORRECCIÓN: Tanto Facturas COMO Boletas generan IVA (19% en Chile)
+    const generaIVA = tipo.includes("factura") || tipo.includes("boleta");
+    
+    const iva = generaIVA ? Math.round(neto * 0.19) : 0;
     ivaInput.value = iva;
     totalInput.value = neto + iva;
 }
 
 function calcularDesdeTotal() {
     const total = parseFloat(totalInput.value) || 0;
-    const esFactura = tipoSelect.value.toLowerCase().includes("factura");
-    if (esFactura && total > 0) {
+    const tipo = tipoSelect.value.toLowerCase();
+    
+    // ✅ CORRECCIÓN: Tanto Facturas COMO Boletas generan IVA
+    const generaIVA = tipo.includes("factura") || tipo.includes("boleta");
+    
+    if (generaIVA && total > 0) {
         const neto = Math.round(total / 1.19);
         netoInput.value = neto;
         ivaInput.value = total - neto;
