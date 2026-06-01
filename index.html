@@ -738,6 +738,51 @@ periodoMobileInput.addEventListener('change', (e) => {
 });
 
 // ============================================================
+// FORMATO AUTOMÁTICO DE RUT CHILENO (XX.XXX.XXX-X)
+// ============================================================
+function formatRUT(rut) {
+    // Eliminar todo lo que no sea dígito o 'k'
+    let value = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    
+    if (value.length === 0) return '';
+    
+    // Separar cuerpo y dígito verificador
+    let dv = '';
+    if (value.length >= 2) {
+        dv = value.slice(-1);
+        value = value.slice(0, -1);
+    }
+    
+    // Agregar puntos al cuerpo
+    let body = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+    // Retornar formato final
+    return dv ? `${body}-${dv}` : body;
+}
+
+// Aplicar formato mientras el usuario escribe
+proveedorRut.addEventListener('input', (e) => {
+    const cursorPos = e.target.selectionStart;
+    const oldValue = e.target.value;
+    const newValue = formatRUT(oldValue);
+    
+    e.target.value = newValue;
+    
+    // Ajustar posición del cursor (opcional, mejora UX)
+    setTimeout(() => {
+        e.target.setSelectionRange(cursorPos, cursorPos);
+    }, 0);
+});
+
+// Validar RUT al perder el foco
+proveedorRut.addEventListener('blur', (e) => {
+    const rut = e.target.value.replace(/[^0-9kK]/g, '');
+    if (rut.length >= 2) {
+        e.target.value = formatRUT(rut);
+    }
+});
+
+// ============================================================
 // LÓGICA ROUTER DE TRÁNSITO PARA TABS MÓVILES
 // ============================================================
 window.switchMobileTab = function(tabId, btnElement) {
@@ -999,19 +1044,38 @@ function renderDashboard() {
         return filtrosActivos.has(d.tipo) || !tiposDocumento.includes(d.tipo);
     });
 
-    // KPIs
+    // === KPIs - CÁLCULO CORREGIDO ===
     let ventas = 0, caja = 0, ivaDebito = 0, ivaCredito = 0;
     filtrados.forEach(d => {
-        const tipo = (d.tipo || "").toLowerCase();
-        if (tipo.includes("venta") || tipo.includes("boleta")) ventas += (d.neto || 0);
-        if (tipo.includes("caja chica")) caja += (d.total || 0);
-        if (tipo === "factura venta") ivaDebito  += (d.iva || 0);
-        if (tipo === "factura compra" || tipo === "factura servicio") ivaCredito += (d.iva || 0);
+        const tipo = (d.tipo || "").toLowerCase().trim();
+        
+        // Ventas Netas: incluye facturas y boletas de venta
+        if (tipo.includes("venta") || tipo.includes("boleta")) {
+            ventas += (d.neto || 0);
+        }
+        
+        // Caja Chica
+        if (tipo.includes("caja chica")) {
+            caja += (d.total || 0);
+        }
+        
+        // IVA Débito (por pagar): Facturas y Boletas de Venta generan IVA por pagar
+        if (tipo.includes("factura venta") || tipo.includes("boleta venta")) {
+            ivaDebito += (d.iva || 0);
+        }
+        
+        // IVA Crédito (recuperable): Compras y servicios generan IVA a favor
+        if (tipo.includes("factura compra") || tipo.includes("factura servicio")) {
+            ivaCredito += (d.iva || 0);
+        }
     });
 
+    // Actualizar KPIs con formato correcto
     document.getElementById('kpi-ventas').textContent = `$${ventas.toLocaleString('es-CL')}`;
     document.getElementById('kpi-caja').textContent   = `$${caja.toLocaleString('es-CL')}`;
-    document.getElementById('kpi-iva').textContent    = `$${(ivaDebito - ivaCredito).toLocaleString('es-CL')}`;
+    // IVA a Pagar = Débito - Crédito (puede ser negativo si hay más compras)
+    const ivaPagar = ivaDebito - ivaCredito;
+    document.getElementById('kpi-iva').textContent    = `$${ivaPagar.toLocaleString('es-CL')}`;
 
     document.getElementById('total-registros').textContent =
         filtrados.length > 0 ? `${filtrados.length} registro${filtrados.length !== 1 ? 's' : ''}` : '';
